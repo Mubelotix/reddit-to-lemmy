@@ -1,7 +1,7 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 
-async fn proxy() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+async fn proxy(request: HttpRequest) -> impl Responder {
+    HttpResponse::Ok().body(format!("Hello, world! {:?}", request))
 }
 
 #[actix_web::main]
