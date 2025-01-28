@@ -52,18 +52,18 @@
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
-use GetBlockedUsers::*;
+use GetBlockedUsersError::*;
 
 use crate::{get_jwt, HackTraitPerson};
 
 #[derive(Debug)]
-pub enum GetBlockedUsers {
+pub enum GetBlockedUsersError {
     Authentication,
     GetSite(LemmyErrorType),
     MissingUser,
 }
 
-impl std::fmt::Display for GetBlockedUsers {
+impl std::fmt::Display for GetBlockedUsersError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Authentication => write!(f, "Authentication error"),
@@ -73,14 +73,14 @@ impl std::fmt::Display for GetBlockedUsers {
     }
 }
 
-impl ResponseError for GetBlockedUsers {
+impl ResponseError for GetBlockedUsersError {
     fn status_code(&self) -> awc::http::StatusCode {
-        eprintln!("{self}");
+        eprintln!("GetBlockedUsersError: {self}");
         awc::http::StatusCode::INTERNAL_SERVER_ERROR
     }
 }
 
-pub async fn get_blocked_users(request: HttpRequest) -> Result<HttpResponse, GetBlockedUsers> {
+pub async fn get_blocked_users(request: HttpRequest) -> Result<HttpResponse, GetBlockedUsersError> {
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {

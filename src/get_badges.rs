@@ -51,17 +51,17 @@
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
-use GetBadges::*;
+use GetBadgesError::*;
 
 use crate::get_jwt;
 
 #[derive(Debug)]
-pub enum GetBadges {
+pub enum GetBadgesError {
     Authentication,
     UnreadCount(LemmyErrorType),
 }
 
-impl std::fmt::Display for GetBadges {
+impl std::fmt::Display for GetBadgesError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Authentication => write!(f, "Authentication error"),
@@ -70,14 +70,14 @@ impl std::fmt::Display for GetBadges {
     }
 }
 
-impl ResponseError for GetBadges {
+impl ResponseError for GetBadgesError {
     fn status_code(&self) -> awc::http::StatusCode {
-        eprintln!("{self}");
+        eprintln!("GetBadgesError: {self}");
         awc::http::StatusCode::INTERNAL_SERVER_ERROR
     }
 }
 
-pub async fn get_badges(request: HttpRequest) -> Result<HttpResponse, GetBadges> {
+pub async fn get_badges(request: HttpRequest) -> Result<HttpResponse, GetBadgesError> {
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {

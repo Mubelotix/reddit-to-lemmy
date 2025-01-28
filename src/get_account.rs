@@ -77,7 +77,7 @@ impl std::fmt::Display for GetAccountError {
 
 impl ResponseError for GetAccountError {
     fn status_code(&self) -> awc::http::StatusCode {
-        eprintln!("{self}");
+        eprintln!("GetAccountError: {self}");
         awc::http::StatusCode::INTERNAL_SERVER_ERROR
     }
 }
