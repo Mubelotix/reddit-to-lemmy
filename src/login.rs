@@ -68,7 +68,7 @@ async fn login(login: Json<LoginPassword>) -> impl Responder {
 
     let jwt = response.jwt.unwrap().into_inner();
 
-    HttpResponseBuilder::new(StatusCode::OK)
+    HttpResponse::Ok()
         .append_header(("set-cookie", format!("reddit_session={jwt}; Path=/; Domain=reddit.com; Max-Age=15638399; HttpOnly; Secure")))
         .json(())
 }

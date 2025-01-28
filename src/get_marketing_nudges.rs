@@ -46,12 +46,11 @@
 //  }
 // {"data":{"econMarketing":{"nudges":[]}}}
 
-use actix_web::{HttpResponse, HttpResponseBuilder};
-use awc::http::StatusCode;
+use actix_web::HttpResponse;
 use serde_json::json;
 
 pub async fn get_marketing_nudges() -> HttpResponse {
-    HttpResponseBuilder::new(StatusCode::OK)
+    HttpResponse::Ok()
         .json(json! {{
             "data": {
                 "econMarketing": {

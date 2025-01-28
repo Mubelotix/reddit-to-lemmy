@@ -48,12 +48,11 @@
 //  }
 // {"data":{"adEligibility":{"userAdEligibility":"ELIGIBLE"}}}
 
-use actix_web::{HttpResponse, HttpResponseBuilder};
-use awc::http::StatusCode;
+use actix_web::HttpResponse;
 use serde_json::json;
 
 pub async fn get_ad_eligibility() -> HttpResponse {
-    HttpResponseBuilder::new(StatusCode::OK)
+    HttpResponse::Ok()
         .json(json! {{
             "data": {
                 "adEligibility": {

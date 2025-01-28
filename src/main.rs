@@ -17,6 +17,7 @@ mod get_marketing_nudges;
 mod get_matrix_notifications;
 mod get_preferences;
 mod get_public_showcase;
+mod get_vaults;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -205,6 +206,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("BlockedRedditors")).to(get_blocked_users::get_blocked_users)
                 .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
                 .guard(ApolloOperation("GetAccountPreferences")).to(get_preferences::get_preferences)
+                .guard(ApolloOperation("GetAllVaults")).to(get_vaults::get_vaults)
                 .guard(ApolloOperation("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items)
                 .guard(ApolloOperation("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase)
                 .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)

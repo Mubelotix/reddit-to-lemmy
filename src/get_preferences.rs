@@ -48,8 +48,7 @@
 //  }
 // {"data":{"identity":{"preferences":{"isAdPersonalizationAllowed":false,"isClickTrackingEnabled":false,"defaultCommentSort":"CONFIDENCE","geopopular":"","isProfileHiddenFromRobots":false,"isSuggestedSortIgnored":false,"mediaThumbnailVisibility":"SUBREDDIT","isNsfwMediaBlocked":true,"isNsfwContentShown":true,"isNsfwSearchEnabled":true,"isLocationBasedRecommendationEnabled":false,"surveyLastSeenAt":null,"isThirdPartyAdPersonalizationAllowed":false,"isThirdPartySiteAdPersonalizationAllowed":false,"isThirdPartyInfoAdPersonalizationAllowed":false,"isThirdPartySiteDataPersonalizedContentAllowed":false,"isTopKarmaSubredditsShown":false,"acceptPrivateMessagesFrom":"EVERYONE","isEmailOptedOut":false,"isOnlinePresenceShown":false,"isFeedRecommendationsEnabled":true,"countryCode":"XZ","isFollowersEnabled":false,"isEmailDigestEnabled":false,"isShowFollowersCountEnabled":false,"isSmsNotificationsEnabled":false,"minCommentScore":-4,"isMachineTranslationImmersive":"UNSET","hiddenSubredditIds":[],"isHideAllContribution":false,"isHideProfileNsfw":false}}}}
 
-use actix_web::{HttpRequest, HttpResponse, HttpResponseBuilder, ResponseError};
-use awc::http::StatusCode;
+use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
 use crate::get_jwt;
@@ -59,7 +58,6 @@ use GetPreferencesError::*;
 pub enum GetPreferencesError {
     Authentication,
     GetSite(LemmyErrorType),
-    UnreadCount(LemmyErrorType),
     MissingUser,
 }
 
@@ -68,7 +66,6 @@ impl std::fmt::Display for GetPreferencesError {
         match self {
             Authentication => write!(f, "Authentication error"),
             GetSite(e) => write!(f, "GetSite error: {e}"),
-            UnreadCount(e) => write!(f, "UnreadCount error: {e}"),
             MissingUser => write!(f, "Missing user error"),
         }
     }
@@ -144,5 +141,5 @@ pub async fn get_preferences(request: HttpRequest) -> Result<HttpResponse, GetPr
         }
     }};
     
-    Ok(HttpResponseBuilder::new(StatusCode::OK).json(rep))
+    Ok(HttpResponse::Ok().json(rep))
 }

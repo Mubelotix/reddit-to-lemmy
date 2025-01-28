@@ -1,4 +1,4 @@
-use actix_web::{post, HttpRequest, HttpResponseBuilder, Responder};
+use actix_web::{post, HttpRequest, HttpResponse, HttpResponseBuilder, Responder};
 use serde_json::json;
 use awc::{cookie::CookieJar, http::StatusCode};
 
@@ -47,7 +47,7 @@ async fn session(request: HttpRequest) -> impl Responder {
     let cookie_header = request.headers().get("cookie").unwrap().to_str().unwrap();
     let jwt = cookie_header.split_once('=').unwrap().1;
 
-    HttpResponseBuilder::new(StatusCode::OK)
+    HttpResponse::Ok()
         .json(json! {{
             "access_token": jwt,
             "expiry_ts": 1738167520,
