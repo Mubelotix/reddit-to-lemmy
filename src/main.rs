@@ -11,6 +11,7 @@ mod get_account;
 mod get_ad_eligibility;
 mod get_badges;
 mod get_blocked_users;
+mod get_inventory_items;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -182,6 +183,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("BadgeCount")).to(get_badges::get_badges)
                 .guard(ApolloOperation("BlockedRedditors")).to(get_blocked_users::get_blocked_users)
                 .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
+                .guard(ApolloOperation("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items)
             )
             .default_service(web::route().to(proxy))
     })
