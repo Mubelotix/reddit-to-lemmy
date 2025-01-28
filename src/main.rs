@@ -23,7 +23,6 @@ enum ProxyError {
 
 impl std::fmt::Display for ProxyError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        println!("error");
         match self {
             ProxyError::RequestPayload(e) => write!(f, "Request payload error: {}", e),
             ProxyError::InvalidAuthority(e) => write!(f, "Invalid authority: {}", e),
@@ -36,6 +35,11 @@ impl std::fmt::Display for ProxyError {
 }
 
 impl ResponseError for ProxyError {
+    fn status_code(&self) -> awc::http::StatusCode {
+        eprintln!("{self}");
+
+        awc::http::StatusCode::INTERNAL_SERVER_ERROR
+    }
 }
 
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
@@ -46,7 +50,7 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
         body.extend_from_slice(&item.map_err(RequestPayload)?);
     }
 
-    let readable_body = request.headers().get("content-type").map(|ct| ct.to_str().unwrap()).map(|ct| {
+    let request_body_readable = request.headers().get("content-type").map(|ct| ct.to_str().unwrap()).map(|ct| {
         READABLE_BODIES.iter().any(|rb| ct.starts_with(rb))
     }).unwrap_or(false);
 
@@ -70,10 +74,9 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     target_request.headers_mut().remove("x-forwarded-port");
     target_request.headers_mut().remove("x-forwarded-host");
     target_request.headers_mut().remove("x-real-ip");
-    target_request.headers_mut().remove("cookie");
     target_request.headers_mut().remove("connection");
     
-    let log = match readable_body {
+    let log_part1 = match request_body_readable {
         true => format!("{target_request:?}\n{:?}", String::from_utf8_lossy(&body)),
         false => format!("{target_request:?}\nbinary"),
     };
@@ -84,28 +87,23 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     };
     let response_body = target_response.body().await.map_err(ResponsePayload)?;
 
-
-    if target_response.status().is_client_error() || target_response.status().is_server_error() {
-        println!("{log}");
-        
-        let readable_body = target_response.headers().get("content-type").map(|ct| ct.to_str().unwrap()).map(|ct| {
-            READABLE_BODIES.iter().any(|rb| ct.starts_with(rb))
-        }).unwrap_or(false);
-    
-        match readable_body {
-            true => println!("{target_response:?}\n{:?}", String::from_utf8_lossy(&response_body)),
-            false => println!("{target_response:?}\nbinary data"),
-        }
-    }
+    let response_body_readable = target_response.headers().get("content-type").map(|ct| ct.to_str().unwrap()).map(|ct| {
+        READABLE_BODIES.iter().any(|rb| ct.starts_with(rb))
+    }).unwrap_or(false);    
 
     let mut response_builder = HttpResponse::new(target_response.status());
     *response_builder.headers_mut() = target_response.headers().clone();
     response_builder.headers_mut().append("content-length".try_into().unwrap(), response_body.len().to_string().parse().unwrap());
     response_builder.headers_mut().remove("transfer-encoding");
     response_builder.headers_mut().remove("content-encoding");
-    let response = response_builder.set_body(response_body);
+    let response = response_builder.set_body(response_body.clone());
 
-    println!("{response:?}");
+    let log_part2 = match response_body_readable {
+        true => format!("{response:?}\n{:?}", String::from_utf8_lossy(&response_body)),
+        false => format!("{response:?}\nbinary data"),
+    };
+
+    println!("{log_part1}\n{log_part2}");
 
     Ok(response)
 }
