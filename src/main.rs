@@ -3,6 +3,7 @@
 use actix_web::{guard::{Guard, GuardContext}, post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
 use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, InvalidUriParts, Scheme}, Method, Uri}};
 use futures::StreamExt;
+use lemmy_client::lemmy_api_common::lemmy_db_schema::{CommentSortType, SortType};
 use serde::Deserialize;
 
 mod login;
@@ -13,6 +14,8 @@ mod get_badges;
 mod get_blocked_users;
 mod get_inventory_items;
 mod get_marketing_nudges;
+mod get_matrix_notifications;
+mod get_preferences;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,6 +42,22 @@ impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source
 
     fn path(&self) -> String {
         format!("/u/{}@{}", self.name, "todo") // TODO
+    }
+}
+
+pub trait HackTraitSortType {
+    fn to_reddit(&self) -> &'static str;
+}
+
+impl HackTraitSortType for CommentSortType {
+    fn to_reddit(&self) -> &'static str {
+        match self {
+            CommentSortType::Hot => "CONFIDENCE",
+            CommentSortType::Top => "TOP",
+            CommentSortType::New => "NEW",
+            CommentSortType::Old => "OLD",
+            CommentSortType::Controversial => "CONTROVERSIAL",
+        }
     }
 }
 
@@ -184,7 +203,9 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("BadgeCount")).to(get_badges::get_badges)
                 .guard(ApolloOperation("BlockedRedditors")).to(get_blocked_users::get_blocked_users)
                 .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
+                .guard(ApolloOperation("GetAccountPreferences")).to(get_preferences::get_preferences)
                 .guard(ApolloOperation("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items)
+                .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
                 .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
             )
             .default_service(web::route().to(proxy))
