@@ -20,7 +20,7 @@
 //     "accept-language": "en-US,en;q=0.9"
 //     "user-agent": "Reddit/Version 2025.03.1/Build 2181077/Android 15"
 //     "x-reddit-loid": "redacted"
-
+// 
 // {"operationName":"AdEligibilityForUser","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"39a5a68f81a20f9f7dafb72f017022d0ced17493d564e2fa8ff1286774eab6e6"}}}
 // HttpResponse { error: None, res: 
 // Response HTTP/1.1 200 OK
