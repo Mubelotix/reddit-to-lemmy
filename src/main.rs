@@ -1,9 +1,47 @@
-use actix_web::{post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
+#![recursion_limit = "512"]
+
+use actix_web::{guard::{Guard, GuardContext}, post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
 use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, InvalidUriParts, Scheme}, Method, Uri}};
 use futures::StreamExt;
+use serde::Deserialize;
 
 mod login;
 mod session;
+mod get_account;
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GraphQlRequest<V> {
+    operation_name: String,
+    variables: V,
+    extensions: serde_json::Value,
+}
+
+pub trait HackTraitPerson {
+    fn reddit_id(&self) -> String;
+    fn prefixed_name(&self) -> String;
+    fn path(&self) -> String;
+}
+
+impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source::person::Person {
+    fn reddit_id(&self) -> String {
+        format!("t2_{}_{}", self.id.0, self.instance_id.0)
+    }
+
+    fn prefixed_name(&self) -> String {
+        format!("u/{}", self.name)
+    }
+
+    fn path(&self) -> String {
+        format!("/u/{}@{}", self.name, "todo") // TODO
+    }
+}
+
+pub fn get_jwt(req: &HttpRequest) -> Option<String> {
+    let autorization = req.headers().get("authorization")?.to_str().ok()?;
+    let jwt = autorization.split_once(' ')?.1.to_owned();
+    Some(jwt)
+}
 
 const READABLE_BODIES: &[&str] = &[
     "application/x-www-form-urlencoded",
@@ -99,7 +137,12 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     response_builder.headers_mut().insert("content-length".try_into().unwrap(), response_body.len().to_string().parse().unwrap());
     response_builder.headers_mut().remove("transfer-encoding");
     response_builder.headers_mut().remove("content-encoding");
-    response_builder.headers_mut().remove("x-reddit-loid");
+    // response_builder.headers_mut().remove("x-reddit-loid");
+    // if let Some(old_cookies) = response_builder.headers_mut().remove("set-cookie").map(|c| c.to_str().unwrap().to_string()).next() {
+    //     let new_cookies = old_cookies.replace("reddit.com;", "3000.code.mub.lol;");
+    //     response_builder.headers_mut().insert("set-cookie".try_into().unwrap(), new_cookies.parse().unwrap());
+    // }
+    
     let response = response_builder.set_body(response_body.clone());
 
     let log_part2 = match response_body_readable {
@@ -114,6 +157,15 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     Ok(response)
 }
 
+struct ApolloOperation(&'static str);
+
+impl Guard for ApolloOperation {
+    fn check(&self, req: &GuardContext) -> bool {
+        req.head().headers().get("x-apollo-operation-name").map(|o| o == self.0).unwrap_or(false)
+    }
+}
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let port = std::env::var("PORT").map(|p| p.parse().expect("Port must be a number")).unwrap_or(3000);
@@ -122,6 +174,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(login::login)
             .service(session::session)
+            .route("/gql-fed.reddit.com", web::post()
+                .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
+            )
             .default_service(web::route().to(proxy))
     })
     .bind(("127.0.0.1", port))?
