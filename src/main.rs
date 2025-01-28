@@ -10,6 +10,7 @@ mod session;
 mod get_account;
 mod get_ad_eligibility;
 mod get_badges;
+mod get_blocked_users;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -179,6 +180,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com", web::post()
                 .guard(ApolloOperation("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility)
                 .guard(ApolloOperation("BadgeCount")).to(get_badges::get_badges)
+                .guard(ApolloOperation("BlockedRedditors")).to(get_blocked_users::get_blocked_users)
                 .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
             )
             .default_service(web::route().to(proxy))

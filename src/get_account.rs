@@ -90,9 +90,9 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
         secure: true
     });
 
-    let settings = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
+    let site = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
     let unread_count = client.unread_count(LemmyRequest { body: (), jwt: Some(jwt) }).await.map_err(UnreadCount)?;
-    let my_user = settings.my_user.ok_or(MissingUser)?;
+    let my_user = site.my_user.ok_or(MissingUser)?;
 
     let mut social_links = Vec::new();
     if let Some(matrix) = &my_user.local_user_view.person.matrix_user_id {
