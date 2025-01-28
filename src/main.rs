@@ -8,6 +8,7 @@ use serde::Deserialize;
 mod login;
 mod session;
 mod get_account;
+mod get_ad_eligibility;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -175,6 +176,7 @@ async fn main() -> std::io::Result<()> {
             .service(login::login)
             .service(session::session)
             .route("/gql-fed.reddit.com", web::post()
+                .guard(ApolloOperation("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility)
                 .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
             )
             .default_service(web::route().to(proxy))
