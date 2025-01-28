@@ -1,6 +1,9 @@
-use actix_web::{web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
+use actix_web::{post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
 use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, InvalidUriParts, Scheme}, Method, Uri}};
 use futures::StreamExt;
+
+mod login;
+mod session;
 
 const READABLE_BODIES: &[&str] = &[
     "application/x-www-form-urlencoded",
@@ -77,7 +80,7 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     target_request.headers_mut().remove("connection");
     
     let log_part1 = match request_body_readable {
-        true => format!("{target_request:?}\n{:?}", String::from_utf8_lossy(&body)),
+        true => format!("{target_request:?}\n{}", String::from_utf8_lossy(&body)),
         false => format!("{target_request:?}\nbinary"),
     };
 
@@ -93,17 +96,20 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
 
     let mut response_builder = HttpResponse::new(target_response.status());
     *response_builder.headers_mut() = target_response.headers().clone();
-    response_builder.headers_mut().append("content-length".try_into().unwrap(), response_body.len().to_string().parse().unwrap());
+    response_builder.headers_mut().insert("content-length".try_into().unwrap(), response_body.len().to_string().parse().unwrap());
     response_builder.headers_mut().remove("transfer-encoding");
     response_builder.headers_mut().remove("content-encoding");
+    response_builder.headers_mut().remove("x-reddit-loid");
     let response = response_builder.set_body(response_body.clone());
 
     let log_part2 = match response_body_readable {
-        true => format!("{response:?}\n{:?}", String::from_utf8_lossy(&response_body)),
+        true => format!("{response:?}\n{}", String::from_utf8_lossy(&response_body)),
         false => format!("{response:?}\nbinary data"),
     };
 
-    println!("{log_part1}\n{log_part2}");
+    if target_domain != "matrix.redditspace.com" {
+        println!("{log_part1}\n{log_part2}");
+    }
 
     Ok(response)
 }
@@ -114,6 +120,8 @@ async fn main() -> std::io::Result<()> {
 
     let fut = HttpServer::new(|| {
         App::new()
+            .service(login::login)
+            .service(session::session)
             .default_service(web::route().to(proxy))
     })
     .bind(("127.0.0.1", port))?
