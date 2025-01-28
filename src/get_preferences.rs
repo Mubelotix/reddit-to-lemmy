@@ -52,7 +52,7 @@ use actix_web::{HttpRequest, HttpResponse, HttpResponseBuilder, ResponseError};
 use awc::http::StatusCode;
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
-use crate::{get_jwt, HackTraitPerson};
+use crate::get_jwt;
 use GetPreferencesError::*;
 
 #[derive(Debug)]
@@ -90,7 +90,6 @@ pub async fn get_preferences(request: HttpRequest) -> Result<HttpResponse, GetPr
     });
 
     let site = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
-    let unread_count = client.unread_count(LemmyRequest { body: (), jwt: Some(jwt) }).await.map_err(UnreadCount)?;
     let my_user = site.my_user.ok_or(MissingUser)?;
 
     let mut social_links = Vec::new();
