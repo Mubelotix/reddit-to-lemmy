@@ -51,6 +51,7 @@
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use log::{debug, trace};
 use serde_json::json;
 use crate::{get_jwt, HackTraitPerson};
 use GetAccountError::*;
@@ -82,6 +83,8 @@ impl ResponseError for GetAccountError {
 }
 
 pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccountError> {
+    debug!("get_account");
+    
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
@@ -183,6 +186,7 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
             }
         }
     }};
-    
+
+    trace!("get_account: {:?}", rep);
     Ok(HttpResponse::Ok().json(rep))
 }

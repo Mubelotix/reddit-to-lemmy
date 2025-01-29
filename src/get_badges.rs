@@ -52,6 +52,7 @@ use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
 use GetBadgesError::*;
+use log::{debug, trace};
 
 use crate::get_jwt;
 
@@ -78,6 +79,8 @@ impl ResponseError for GetBadgesError {
 }
 
 pub async fn get_badges(request: HttpRequest) -> Result<HttpResponse, GetBadgesError> {
+    debug!("get_badges");
+
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
@@ -123,5 +126,6 @@ pub async fn get_badges(request: HttpRequest) -> Result<HttpResponse, GetBadgesE
         }
     }};
 
+    trace!("get_badges response: {:?}", rep);
     Ok(HttpResponse::Ok().json(rep))
 }

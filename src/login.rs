@@ -1,8 +1,3 @@
-use actix_web::{post, web::Json, HttpResponse, HttpResponseBuilder, Responder};
-use awc::http::StatusCode;
-use lemmy_client::{ClientOptions, LemmyClient};
-use serde::{Serialize, Deserialize};
-
 // ClientRequest HTTP/1.1 POST https://www.reddit.com/auth/v2/login/password
 //   headers:
 //     "client-vendor-id": "6918b40d-1a50-4478-8b05-ad96845c1ae3"
@@ -43,7 +38,13 @@ use serde::{Serialize, Deserialize};
 //  }
 // "{}"
 
-#[derive(Deserialize)]
+use actix_web::{post, web::Json, HttpResponse, HttpResponseBuilder, Responder};
+use awc::http::StatusCode;
+use lemmy_client::{ClientOptions, LemmyClient};
+use serde::{Serialize, Deserialize};
+use log::{debug, trace};
+
+#[derive(Debug, Deserialize)]
 struct LoginPassword {
     identifier: String,
     password: String,
@@ -53,6 +54,8 @@ struct LoginPassword {
 
 #[post("/www.reddit.com/auth/v2/login/password")]
 async fn login(login: Json<LoginPassword>) -> impl Responder {
+    debug!("login {login:?}");
+
     let (user, instance) = login.identifier.split_once('@').unwrap();
 
     let client = LemmyClient::new(ClientOptions {
@@ -68,6 +71,7 @@ async fn login(login: Json<LoginPassword>) -> impl Responder {
 
     let jwt = response.jwt.unwrap().into_inner();
 
+    trace!("login success");
     HttpResponse::Ok()
         .append_header(("set-cookie", format!("reddit_session={jwt}; Path=/; Domain=reddit.com; Max-Age=15638399; HttpOnly; Secure")))
         .json(())

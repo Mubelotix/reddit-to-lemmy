@@ -5,6 +5,7 @@ use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, Inva
 use base64::Engine;
 use futures::StreamExt;
 use lemmy_client::lemmy_api_common::{lemmy_db_schema::{source::{community::Community, post::Post}, CommentSortType, SortType}, lemmy_db_views::structs::PostView};
+use log::info;
 use serde::{Deserialize, Deserializer};
 
 mod login;
@@ -256,6 +257,8 @@ impl Guard for ApolloOperation {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init();
+
     let port = std::env::var("PORT").map(|p| p.parse().expect("Port must be a number")).unwrap_or(3000);
 
     let fut = HttpServer::new(|| {
@@ -286,7 +289,7 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", port))?
     .run();
 
-    println!("Server running at http://localhost:{port}");
+    info!("Server running at http://localhost:{port}");
 
     fut.await
 }

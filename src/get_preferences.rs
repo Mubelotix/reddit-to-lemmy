@@ -52,6 +52,7 @@ use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
 use crate::get_jwt;
+use log::{debug, trace};
 use GetPreferencesError::*;
 
 #[derive(Debug)]
@@ -79,6 +80,8 @@ impl ResponseError for GetPreferencesError {
 }
 
 pub async fn get_preferences(request: HttpRequest) -> Result<HttpResponse, GetPreferencesError> {
+    debug!("get_preferences");
+
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
@@ -141,5 +144,6 @@ pub async fn get_preferences(request: HttpRequest) -> Result<HttpResponse, GetPr
         }
     }};
     
+    trace!("get_preferences response: {rep}");
     Ok(HttpResponse::Ok().json(rep))
 }

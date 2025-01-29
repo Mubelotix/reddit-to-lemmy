@@ -34,7 +34,7 @@
 //     "date": "Tue, 28 Jan 2025 17:18:34 GMT"
 //     "vary": "origin"
 //     "accept-ranges": "bytes"
-//     "x-reddit-session": "qgjipbdgkbdqqieqda.0.1738084714615.Z0FBQUFBQm5tUkZxeE9CNjlrWDdtN3JaUHA0SUxPdU5tU190dmRrUkRaUnRkdXkwd0pObHFDS0Z4c1QzbnNSMUtBcm9iY3pUa2l5UmgxcVNLdjJPekxiV2h2M2ZMalRndTFLN0tMTERwQUZua3VkaG92TGROVTVEdk40MVF0WjFza1RSWl9hX25Cemo"
+//     "x-reddit-session": "redacted"
 //     "x-ratelimit-remaining": "1985.0"
 //     "x-ratelimit-used": "15"
 //     "x-ratelimit-reset": "85"
@@ -50,8 +50,11 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn search_message_reactions() -> HttpResponse {
+    debug!("search_message_reactions");
+
     let rep = json! {{
         "data": {
             "searchChatMessageReactionIcons": {

@@ -1,9 +1,3 @@
-use actix_web::{post, HttpRequest, HttpResponse, HttpResponseBuilder, Responder};
-use serde_json::json;
-use awc::{cookie::CookieJar, http::StatusCode};
-
-
-
 // ClientRequest HTTP/1.1 POST https://www.reddit.com/auth/v2/oauth/access-token/session
 //   headers:
 //     "authorization": "Basic b2hYcG9xclpZdWIxa2c6"
@@ -42,17 +36,25 @@ use awc::{cookie::CookieJar, http::StatusCode};
 //  }
 // {"access_token":"redacted jwt token", "expiry_ts":1738167520, "expires_in":86399, "scope":["*", "email", "pii"], "token_type":"bearer"}
 
+use actix_web::{post, HttpRequest, HttpResponse, Responder};
+use serde_json::json;
+use log::{debug, trace};
+
 #[post("/www.reddit.com/auth/v2/oauth/access-token/session")]
 async fn session(request: HttpRequest) -> impl Responder {
+    debug!("session");
+
     let cookie_header = request.headers().get("cookie").unwrap().to_str().unwrap();
     let jwt = cookie_header.split_once('=').unwrap().1;
 
-    HttpResponse::Ok()
-        .json(json! {{
-            "access_token": jwt,
-            "expiry_ts": 1738167520,
-            "expires_in": 86399,
-            "scope": ["*", "email", "pii"],
-            "token_type": "bearer"
-        }})
+    let rep = json! {{
+        "access_token": jwt,
+        "expiry_ts": 1748167520,
+        "expires_in": 86399,
+        "scope": ["*", "email", "pii"],
+        "token_type": "bearer"
+    }};
+
+    trace!("session redacted");
+    HttpResponse::Ok().json(rep)
 }

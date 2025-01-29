@@ -54,6 +54,7 @@ use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{SortType, SubscribedType
 use serde::Deserialize;
 use serde_json::json;
 use crate::{get_jwt, GraphQlRequest, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
+use log::{debug, trace};
 use GetHomeFeedError::*;
 
 #[derive(Debug)]
@@ -81,7 +82,7 @@ impl ResponseError for GetHomeFeedError {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetHomeFeedVariables {
-    feed_context_input: FeedContextInput,
+    // feed_context_input: FeedContextInput,
     #[serde(deserialize_with = "HackTraitSortType::deserialize_from_reddit")]
     sort: Option<SortType>,
 }
@@ -89,11 +90,13 @@ pub struct GetHomeFeedVariables {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeedContextInput {
-    theme_mode: String,
-    layout: String,
+    // theme_mode: String,
+    // layout: String,
 }
 
 pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHomeFeedVariables>>) -> Result<HttpResponse, GetHomeFeedError> {
+    debug!("get_home_feed");
+
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
@@ -212,6 +215,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
         }
     }};
     
+    trace!("get_home_feed response: {:?}", rep);
     Ok(HttpResponse::Ok().json(rep))
 }
 

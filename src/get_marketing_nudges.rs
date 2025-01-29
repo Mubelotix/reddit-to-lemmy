@@ -48,14 +48,18 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn get_marketing_nudges() -> HttpResponse {
-    HttpResponse::Ok()
-        .json(json! {{
-            "data": {
-                "econMarketing": {
-                    "nudges": []
-                }
+    debug!("get_marketing_nudges");
+
+    let rep = json! {{
+        "data": {
+            "econMarketing": {
+                "nudges": []
             }
-        }})
+        }
+    }};
+
+    HttpResponse::Ok().json(rep)
 }

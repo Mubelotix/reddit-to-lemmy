@@ -50,14 +50,18 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn get_inventory_items() -> HttpResponse {
-    HttpResponse::Ok()
-        .json(json! {{
-            "data": {
-                "inventoryItems": {
-                    "edges": []
-                }
+    debug!("get_inventory_items");
+
+    let rep = json! {{
+        "data": {
+            "inventoryItems": {
+                "edges": []
             }
-        }})
+        }
+    }};
+
+    HttpResponse::Ok().json(rep)
 }

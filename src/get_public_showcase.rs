@@ -50,20 +50,24 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn get_public_showcase() -> HttpResponse {
-    HttpResponse::Ok()
-        .json(json! {{
-            "data": {
-                "identity": {
-                    "displayedCollectibleItemsState": "DISABLED",
-                    "redditor": {
-                        "displayedCollectibleItems": {
-                            "edges": []
-                        }
+    debug!("get_public_showcase");
+
+    let rep = json! {{
+        "data": {
+            "identity": {
+                "displayedCollectibleItemsState": "DISABLED",
+                "redditor": {
+                    "displayedCollectibleItems": {
+                        "edges": []
                     }
                 }
             }
-        }})
+        }
+    }};
+
+    HttpResponse::Ok().json(rep)
 }
 

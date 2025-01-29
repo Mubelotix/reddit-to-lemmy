@@ -49,8 +49,11 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn register_mobile_push_token() -> HttpResponse {
+    debug!("register_mobile_push_token");
+
     // TODO: It would be wonderful to have a real implementation here.
 
     let rep = json! {{

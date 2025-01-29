@@ -50,14 +50,18 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn get_ad_eligibility() -> HttpResponse {
-    HttpResponse::Ok()
-        .json(json! {{
-            "data": {
-                "adEligibility": {
-                    "userAdEligibility": "NOT_ELIGIBLE_CONTEXT" // Value randomly found in the source code. Not sure what this means nor what it does.
-                }
+    debug!("get_ad_eligibility");
+
+    let rep = json! {{
+        "data": {
+            "adEligibility": {
+                "userAdEligibility": "NOT_ELIGIBLE_CONTEXT" // Value randomly found in the source code. Not sure what this means nor what it does.
             }
-        }})
+        }
+    }};
+
+    HttpResponse::Ok().json(rep)
 }

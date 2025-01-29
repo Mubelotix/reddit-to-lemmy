@@ -54,6 +54,7 @@ use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient,
 use serde::Deserialize;
 use serde_json::json;
 use crate::{get_jwt, GraphQlRequest, HackTraitCommunity};
+use log::{debug, trace};
 use GetCommunitiesError::*;
 
 #[derive(Debug)]
@@ -90,6 +91,8 @@ pub struct GetCommunitiesVariables {
 }
 
 pub async fn get_communities(request: HttpRequest, body: Json<GraphQlRequest<GetCommunitiesVariables>>) -> Result<HttpResponse, GetCommunitiesError> {
+    debug!("get_communities");
+
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
@@ -147,5 +150,6 @@ pub async fn get_communities(request: HttpRequest, body: Json<GraphQlRequest<Get
         }
     }};
     
+    trace!("get_communities response: {:?}", rep);
     Ok(HttpResponse::Ok().json(rep))
 }

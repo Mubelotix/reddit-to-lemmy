@@ -53,6 +53,7 @@ use actix_web::{HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
 use serde_json::json;
 use GetBlockedUsersError::*;
+use log::{debug, trace};
 
 use crate::{get_jwt, HackTraitPerson};
 
@@ -81,6 +82,8 @@ impl ResponseError for GetBlockedUsersError {
 }
 
 pub async fn get_blocked_users(request: HttpRequest) -> Result<HttpResponse, GetBlockedUsersError> {
+    debug!("get_blocked_users");
+
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
@@ -110,5 +113,6 @@ pub async fn get_blocked_users(request: HttpRequest) -> Result<HttpResponse, Get
         }
     }};
 
+    trace!("get_blocked_users response: {:?}", rep);
     Ok(HttpResponse::Ok().json(rep))
 }

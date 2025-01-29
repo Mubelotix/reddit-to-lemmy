@@ -50,14 +50,18 @@
 
 use actix_web::HttpResponse;
 use serde_json::json;
+use log::debug;
 
 pub async fn get_vaults() -> HttpResponse {
-    HttpResponse::Ok()
-        .json(json! {{
-            "data": {
-                "vault": {
-                    "addresses": []
-                }
+    debug!("get_vaults");
+
+    let rep = json! {{
+        "data": {
+            "vault": {
+                "addresses": []
             }
-        }})
+        }
+    }};
+
+    HttpResponse::Ok().json(rep)
 }
