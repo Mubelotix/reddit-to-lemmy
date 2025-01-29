@@ -21,6 +21,7 @@ mod get_matrix_notifications;
 mod get_preferences;
 mod get_public_showcase;
 mod get_subscribed_count;
+mod get_username;
 mod get_vaults;
 
 #[derive(Deserialize)]
@@ -268,6 +269,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("GetAllVaults")).to(get_vaults::get_vaults)
                 .guard(ApolloOperation("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items)
                 .guard(ApolloOperation("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase)
+                .guard(ApolloOperation("GetRealUsername")).to(get_username::get_username)
                 .guard(ApolloOperation("HomeFeedSdui")).to(get_home_feed::get_home_feed)
                 .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
                 .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
