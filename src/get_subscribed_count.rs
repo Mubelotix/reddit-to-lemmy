@@ -55,16 +55,16 @@ use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient,
 use serde::Deserialize;
 use serde_json::json;
 use crate::{get_jwt, GraphQlRequest};
-use GetSubscribedCount::*;
+use GetSubscribedCountError::*;
 
 #[derive(Debug)]
-pub enum GetSubscribedCount {
+pub enum GetSubscribedCountError {
     Authentication,
     GetSite(LemmyErrorType),
     MissingUser,
 }
 
-impl std::fmt::Display for GetSubscribedCount {
+impl std::fmt::Display for GetSubscribedCountError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Authentication => write!(f, "Authentication error"),
@@ -74,9 +74,9 @@ impl std::fmt::Display for GetSubscribedCount {
     }
 }
 
-impl ResponseError for GetSubscribedCount {
+impl ResponseError for GetSubscribedCountError {
     fn status_code(&self) -> awc::http::StatusCode {
-        eprintln!("GetCommunitiesError: {self}");
+        eprintln!("GetSubscribedCountError: {self}");
         awc::http::StatusCode::INTERNAL_SERVER_ERROR
     }
 }
@@ -87,7 +87,7 @@ pub struct GetSubscribedCountVariables {
     first: usize
 }
 
-pub async fn get_subscribed_count(request: HttpRequest, body: Json<GraphQlRequest<GetSubscribedCountVariables>>) -> Result<HttpResponse, GetSubscribedCount> {
+pub async fn get_subscribed_count(request: HttpRequest, body: Json<GraphQlRequest<GetSubscribedCountVariables>>) -> Result<HttpResponse, GetSubscribedCountError> {
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
     let client = LemmyClient::new(ClientOptions {
