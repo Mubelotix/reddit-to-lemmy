@@ -23,6 +23,7 @@ mod get_public_showcase;
 mod get_subscribed_count;
 mod get_username;
 mod get_vaults;
+mod register_mobile_push_token;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -273,6 +274,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("HomeFeedSdui")).to(get_home_feed::get_home_feed)
                 .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
                 .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
+                .guard(ApolloOperation("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token)
                 .guard(ApolloOperation("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count)
                 .guard(ApolloOperation("UserSubredditListItems")).to(get_communities::get_communities)
             )
