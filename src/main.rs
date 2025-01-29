@@ -13,13 +13,14 @@ mod get_account;
 mod get_ad_eligibility;
 mod get_badges;
 mod get_blocked_users;
+mod get_communities;
 mod get_home_feed;
 mod get_inventory_items;
 mod get_marketing_nudges;
 mod get_matrix_notifications;
 mod get_preferences;
 mod get_public_showcase;
-mod get_communities;
+mod get_subscribed_count;
 mod get_vaults;
 
 #[derive(Deserialize)]
@@ -270,6 +271,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("HomeFeedSdui")).to(get_home_feed::get_home_feed)
                 .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
                 .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
+                .guard(ApolloOperation("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count)
                 .guard(ApolloOperation("UserSubredditListItems")).to(get_communities::get_communities)
             )
             .default_service(web::route().to(proxy))
