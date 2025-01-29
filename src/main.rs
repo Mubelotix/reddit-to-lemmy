@@ -1,6 +1,6 @@
 #![recursion_limit = "512"]
 
-use actix_web::{guard::{Guard, GuardContext}, post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
+use actix_web::{error::ErrorUnauthorized, guard::{Guard, GuardContext}, post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
 use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, InvalidUriParts, Scheme}, Method, Uri}};
 use base64::Engine;
 use futures::StreamExt;
@@ -279,6 +279,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions)
                 .guard(ApolloOperation("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count)
                 .guard(ApolloOperation("UserSubredditListItems")).to(get_communities::get_communities)
+                .to(HttpResponse::Forbidden)
             )
             .default_service(web::route().to(proxy))
     })
