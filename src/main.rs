@@ -5,7 +5,7 @@ use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, Inva
 use base64::Engine;
 use futures::StreamExt;
 use lemmy_client::lemmy_api_common::{lemmy_db_schema::{source::{community::Community, post::Post}, CommentSortType, SortType}, lemmy_db_views::structs::PostView};
-use log::info;
+use log::{info, warn};
 use serde::{Deserialize, Deserializer};
 
 mod login;
@@ -282,7 +282,11 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions)
                 .guard(ApolloOperation("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count)
                 .guard(ApolloOperation("UserSubredditListItems")).to(get_communities::get_communities)
-                .to(HttpResponse::Forbidden)
+                .to(|req: HttpRequest| async move {
+                    let operation_name = req.headers().get("x-apollo-operation-name").map(|o| o.to_str().unwrap()).unwrap_or("unknown");
+                    warn!("Unknown Apollo operation: {operation_name}");
+                    HttpResponse::Forbidden().finish()
+                })
             )
             .default_service(web::route().to(proxy))
     })
