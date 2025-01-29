@@ -2,9 +2,10 @@
 
 use actix_web::{guard::{Guard, GuardContext}, post, web::{self, Bytes}, App, HttpMessage, HttpRequest, HttpResponse, HttpServer, Responder, ResponseError};
 use awc::{error::{PayloadError, SendRequestError}, http::{uri::{InvalidUri, InvalidUriParts, Scheme}, Method, Uri}};
+use base64::Engine;
 use futures::StreamExt;
-use lemmy_client::lemmy_api_common::lemmy_db_schema::{CommentSortType, SortType};
-use serde::Deserialize;
+use lemmy_client::lemmy_api_common::{lemmy_db_schema::{source::{community::Community, post::Post}, CommentSortType, SortType}, lemmy_db_views::structs::PostView};
+use serde::{Deserialize, Deserializer};
 
 mod login;
 mod session;
@@ -12,6 +13,7 @@ mod get_account;
 mod get_ad_eligibility;
 mod get_badges;
 mod get_blocked_users;
+mod get_home_feed;
 mod get_inventory_items;
 mod get_marketing_nudges;
 mod get_matrix_notifications;
@@ -47,11 +49,41 @@ impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source
     }
 }
 
-pub trait HackTraitSortType {
+pub trait HackTraitCommunity {
+    fn prefixed_name(&self) -> String;
+    fn link(&self) -> String;
+}
+
+impl HackTraitCommunity for Community {
+    fn prefixed_name(&self) -> String {
+        format!("c/{}", self.name)
+    }
+
+    fn link(&self) -> String {
+        format!("{}@{}", self.name, "todo") // TODO
+    }
+}
+
+pub trait HackTraitPost {
+    fn reddit_id(&self) -> String;
+    fn reddit_id_base64(&self) -> String;
+}
+
+impl HackTraitPost for Post {
+    fn reddit_id(&self) -> String {
+        format!("t3_{}", self.id)
+    }
+
+    fn reddit_id_base64(&self) -> String {
+        base64::prelude::BASE64_STANDARD.encode(self.reddit_id())
+    }
+}
+
+pub trait HackTraitCommentSortType {
     fn to_reddit(&self) -> &'static str;
 }
 
-impl HackTraitSortType for CommentSortType {
+impl HackTraitCommentSortType for CommentSortType {
     fn to_reddit(&self) -> &'static str {
         match self {
             CommentSortType::Hot => "CONFIDENCE",
@@ -59,6 +91,26 @@ impl HackTraitSortType for CommentSortType {
             CommentSortType::New => "NEW",
             CommentSortType::Old => "OLD",
             CommentSortType::Controversial => "CONTROVERSIAL",
+        }
+    }
+}
+
+pub trait HackTraitSortType: Sized {
+    fn deserialize_from_reddit<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>;
+}
+
+impl HackTraitSortType for Option<SortType> {
+    fn deserialize_from_reddit<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let sort_type = String::deserialize(deserializer)?;
+        match sort_type.as_str() {
+            "BEST" => Ok(Some(SortType::Active)),
+            "NEW" => Ok(Some(SortType::New)),
+            "HOT" => Ok(Some(SortType::Hot)),
+            "TOP" => Ok(Some(SortType::TopDay)),
+            "CONTROVERSIAL" => Ok(Some(SortType::Controversial)),
+            "RISING" => Ok(Some(SortType::Scaled)),
+            "NONE" => Ok(None),
+            _ => Err(serde::de::Error::custom(format!("Unknown sort type: {sort_type}"))),
         }
     }
 }
@@ -209,6 +261,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("GetAllVaults")).to(get_vaults::get_vaults)
                 .guard(ApolloOperation("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items)
                 .guard(ApolloOperation("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase)
+                .guard(ApolloOperation("HomeFeedSdui")).to(get_home_feed::get_home_feed)
                 .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
                 .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
             )
