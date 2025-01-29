@@ -286,6 +286,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserLocation")).to(get_location::get_location))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UsernameAndExperiments")).to(get_username::get_username))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserSubredditListItems")).to(get_communities::get_communities))
             .route("/gql-fed.reddit.com/", web::to(|req: HttpRequest| async move {
                     let operation_name = req.headers().get("x-apollo-operation-name").map(|o| o.to_str().unwrap()).unwrap_or("unknown");
