@@ -12,6 +12,7 @@ mod login;
 mod session;
 mod get_account;
 mod get_ad_eligibility;
+mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
 mod get_communities;
@@ -271,6 +272,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAllVaults")).to(get_vaults::get_vaults))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAwardsForSubreddit")).to(get_awards_for_sub::get_awards_for_sub))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetRealUsername")).to(get_username::get_username))
