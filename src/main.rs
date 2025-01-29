@@ -29,6 +29,7 @@ mod get_username;
 mod get_vaults;
 mod register_mobile_push_token;
 mod search_message_reactions;
+mod w3_reporting_policy;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -210,6 +211,7 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     target_request.headers_mut().remove("connection");
     
     let log_part1 = match request_body_readable {
+        _ if body.is_empty() => format!("{target_request:?}\nno content"),
         true => format!("{target_request:?}\n{}", String::from_utf8_lossy(&body)),
         false => format!("{target_request:?}\nbinary"),
     };
@@ -238,6 +240,7 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     let response = response_builder.set_body(response_body.clone());
 
     let log_part2 = match response_body_readable {
+        _ if response_body.is_empty() => format!("{response:?}\nno content"),
         true => format!("{response:?}\n{}", String::from_utf8_lossy(&response_body)),
         false => format!("{response:?}\nbinary data"),
     };
@@ -268,6 +271,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(login::login)
             .service(session::session)
+            .service(w3_reporting_policy::w3_reporting_policy)
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))

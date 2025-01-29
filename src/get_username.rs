@@ -80,8 +80,6 @@ pub async fn get_username(request: HttpRequest) -> Result<HttpResponse, GetUsern
         secure: true
     });
 
-    debug!("{jwt}");
-
     let site = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
     let my_user = site.my_user.ok_or(MissingUser)?;
 
