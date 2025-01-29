@@ -59,18 +59,14 @@ use GetHomeFeedError::*;
 #[derive(Debug)]
 pub enum GetHomeFeedError {
     Authentication,
-    GetSite(LemmyErrorType),
-    UnreadCount(LemmyErrorType),
-    MissingUser,
+    ListPosts(LemmyErrorType),
 }
 
 impl std::fmt::Display for GetHomeFeedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Authentication => write!(f, "Authentication error"),
-            GetSite(e) => write!(f, "GetSite error: {e}"),
-            UnreadCount(e) => write!(f, "UnreadCount error: {e}"),
-            MissingUser => write!(f, "Missing user error"),
+            ListPosts(e) => write!(f, "ListPosts error: {e}"),
         }
     }
 }
@@ -108,7 +104,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
     let posts = client.list_posts(LemmyRequest { body: GetPosts {
         sort: body.variables.sort,
         ..GetPosts::default()
-    }, jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
+    }, jwt: Some(jwt.clone()) }).await.map_err(ListPosts)?;
 
     let rep = json! {{
         "data": {
