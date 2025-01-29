@@ -19,6 +19,7 @@ mod get_marketing_nudges;
 mod get_matrix_notifications;
 mod get_preferences;
 mod get_public_showcase;
+mod get_communities;
 mod get_vaults;
 
 #[derive(Deserialize)]
@@ -37,7 +38,7 @@ pub trait HackTraitPerson {
 
 impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source::person::Person {
     fn reddit_id(&self) -> String {
-        format!("t2_{}_{}", self.id.0, self.instance_id.0)
+        format!("t2_{}", self.id.0)
     }
 
     fn prefixed_name(&self) -> String {
@@ -50,11 +51,16 @@ impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source
 }
 
 pub trait HackTraitCommunity {
+    fn reddit_id(&self) -> String;
     fn prefixed_name(&self) -> String;
     fn link(&self) -> String;
 }
 
 impl HackTraitCommunity for Community {
+    fn reddit_id(&self) -> String {
+        format!("t5_{}", self.id.0)
+    }
+
     fn prefixed_name(&self) -> String {
         format!("c/{}", self.name)
     }
@@ -264,6 +270,7 @@ async fn main() -> std::io::Result<()> {
                 .guard(ApolloOperation("HomeFeedSdui")).to(get_home_feed::get_home_feed)
                 .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
                 .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
+                .guard(ApolloOperation("UserSubredditListItems")).to(get_communities::get_communities)
             )
             .default_service(web::route().to(proxy))
     })
