@@ -19,6 +19,7 @@ mod get_communities;
 mod get_dynamic_configs;
 mod get_home_feed;
 mod get_inventory_items;
+mod get_location;
 mod get_marketing_nudges;
 mod get_matrix_notifications;
 mod get_preferences;
@@ -284,6 +285,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserLocation")).to(get_location::get_location))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserSubredditListItems")).to(get_communities::get_communities))
             .route("/gql-fed.reddit.com/", web::to(|req: HttpRequest| async move {
                     let operation_name = req.headers().get("x-apollo-operation-name").map(|o| o.to_str().unwrap()).unwrap_or("unknown");
