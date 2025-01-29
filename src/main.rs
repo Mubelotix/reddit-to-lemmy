@@ -16,6 +16,7 @@ mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
 mod get_communities;
+mod get_dynamic_configs;
 mod get_home_feed;
 mod get_inventory_items;
 mod get_marketing_nudges;
@@ -267,6 +268,7 @@ async fn main() -> std::io::Result<()> {
             .service(login::login)
             .service(session::session)
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
