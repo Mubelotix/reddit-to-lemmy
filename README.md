@@ -15,7 +15,7 @@ Such an app would probably be illegal to distribute, so any APK you might find o
 Build dependencies:
 
 ```bash
-sudo apt update && sudo apt install -y build-essential libssel-dev pkg-config
+sudo apt update && sudo apt install -y build-essential libssl-dev pkg-config
 ```
 
 Build :

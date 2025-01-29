@@ -115,7 +115,7 @@ pub async fn get_subscribed_count(request: HttpRequest, body: Json<GraphQlReques
         }
     }};
     
-    trace!("get_subscribed_count response: {rep}");
+    trace!("get_subscribed_count response: {count} repetitions of pattern");
     Ok(HttpResponse::Ok().json(rep))
 }
 

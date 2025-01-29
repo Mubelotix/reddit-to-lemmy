@@ -246,9 +246,9 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     Ok(response)
 }
 
-struct ApolloOperation(&'static str);
+struct Apollo(&'static str);
 
-impl Guard for ApolloOperation {
+impl Guard for Apollo {
     fn check(&self, req: &GuardContext) -> bool {
         req.head().headers().get("x-apollo-operation-name").map(|o| o == self.0).unwrap_or(false)
     }
@@ -265,29 +265,27 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(login::login)
             .service(session::session)
-            .route("/gql-fed.reddit.com", web::post()
-                .guard(ApolloOperation("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility)
-                .guard(ApolloOperation("BadgeCount")).to(get_badges::get_badges)
-                .guard(ApolloOperation("BlockedRedditors")).to(get_blocked_users::get_blocked_users)
-                .guard(ApolloOperation("GetAccount")).to(get_account::get_account)
-                .guard(ApolloOperation("GetAccountPreferences")).to(get_preferences::get_preferences)
-                .guard(ApolloOperation("GetAllVaults")).to(get_vaults::get_vaults)
-                .guard(ApolloOperation("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items)
-                .guard(ApolloOperation("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase)
-                .guard(ApolloOperation("GetRealUsername")).to(get_username::get_username)
-                .guard(ApolloOperation("HomeFeedSdui")).to(get_home_feed::get_home_feed)
-                .guard(ApolloOperation("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications)
-                .guard(ApolloOperation("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges)
-                .guard(ApolloOperation("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token)
-                .guard(ApolloOperation("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions)
-                .guard(ApolloOperation("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count)
-                .guard(ApolloOperation("UserSubredditListItems")).to(get_communities::get_communities)
-                .to(|req: HttpRequest| async move {
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAllVaults")).to(get_vaults::get_vaults))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetRealUsername")).to(get_username::get_username))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("HomeFeedSdui")).to(get_home_feed::get_home_feed))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserSubredditListItems")).to(get_communities::get_communities))
+            .route("/gql-fed.reddit.com/", web::to(|req: HttpRequest| async move {
                     let operation_name = req.headers().get("x-apollo-operation-name").map(|o| o.to_str().unwrap()).unwrap_or("unknown");
                     warn!("Unknown Apollo operation: {operation_name}");
                     HttpResponse::Forbidden().finish()
-                })
-            )
+            }))
             .default_service(web::route().to(proxy))
     })
     .bind(("127.0.0.1", port))?

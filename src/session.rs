@@ -46,6 +46,7 @@ async fn session(request: HttpRequest) -> impl Responder {
 
     let cookie_header = request.headers().get("cookie").unwrap().to_str().unwrap();
     let jwt = cookie_header.split_once('=').unwrap().1;
+    let jwt = jwt.split_once(';').map(|(jwt, _)| jwt).unwrap_or(jwt);
 
     let rep = json! {{
         "access_token": jwt,
