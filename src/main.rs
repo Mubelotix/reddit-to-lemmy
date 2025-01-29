@@ -10,6 +10,9 @@ use serde::{Deserialize, Deserializer};
 
 mod login;
 mod session;
+mod loid;
+mod w3_reporting_policy;
+
 mod get_account;
 mod get_ad_eligibility;
 mod get_awards_for_sub;
@@ -29,7 +32,6 @@ mod get_username;
 mod get_vaults;
 mod register_mobile_push_token;
 mod search_message_reactions;
-mod w3_reporting_policy;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -272,6 +274,7 @@ async fn main() -> std::io::Result<()> {
             .service(login::login)
             .service(session::session)
             .service(w3_reporting_policy::w3_reporting_policy)
+            .service(loid::loid)
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
