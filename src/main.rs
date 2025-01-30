@@ -27,6 +27,7 @@ mod get_custom_emojis;
 mod get_dev_metadata;
 mod get_dynamic_configs;
 mod get_earned_gold;
+mod get_email_permission;
 mod get_experiments;
 mod get_home_feed;
 mod get_inventory_items;
@@ -238,6 +239,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentTreeAds")).to(ads::get_comment_tree_ads))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentsPageAdPost")).to(ads::get_comments_page_ad))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("DiscoverBarRecommendations")).to(get_recommendations::get_recommendations))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("EmailPermission")).to(get_email_permission::get_email_permission))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ExposeExperiments")).to(expose_experiments::expose_experiments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
