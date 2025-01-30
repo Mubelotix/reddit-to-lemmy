@@ -13,15 +13,14 @@ mod w3_reporting_policy;
 mod v2c;
 mod v2p;
 
+mod ads;
+
 mod expose_experiments;
 mod get_account;
-mod get_ad_eligibility;
 mod get_awarding_totals;
 mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
-mod get_comment_tree_ads;
-mod get_comments_page_ad;
 mod get_communities;
 mod get_community;
 mod get_custom_emojis;
@@ -177,13 +176,13 @@ async fn main() -> std::io::Result<()> {
             .service(loid::loid)
             .service(v2c::v2c)
             .service(v2p::v2p)
-            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(ads::get_ad_eligibility))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AwardingTotalsForPost")).to(get_awarding_totals::get_awarding_totals))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
-            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentTreeAds")).to(get_comment_tree_ads::get_comment_tree_ads))
-            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentsPageAdPost")).to(get_comments_page_ad::get_comments_page_ad))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentTreeAds")).to(ads::get_comment_tree_ads))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentsPageAdPost")).to(ads::get_comments_page_ad))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("DiscoverBarRecommendations")).to(get_recommendations::get_recommendations))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ExposeExperiments")).to(expose_experiments::expose_experiments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
