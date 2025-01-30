@@ -18,6 +18,7 @@ mod v2p;
 mod expose_experiments;
 mod get_account;
 mod get_ad_eligibility;
+mod get_awarding_totals;
 mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
@@ -187,7 +188,7 @@ impl ResponseError for ProxyError {
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
     use ProxyError::*;
 
-    const WANTED_OPERATIONS: &[&str] = &["SubredditStructuredStyle", "CommentsPageAdPost", "CommentTreeAds", "GetCustomEmojisStatus", "AwardingTotalsForPost", "GetRedditGoldBalance", "EmailPermission", "UserComments", "ProfileTrophies", "UserSubmittedPostSets", "ExposeExperiments", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
+    const WANTED_OPERATIONS: &[&str] = &["SubredditStructuredStyle", "CommentsPageAdPost", "CommentTreeAds", "GetCustomEmojisStatus", "GetRedditGoldBalance", "EmailPermission", "UserComments", "ProfileTrophies", "UserSubmittedPostSets", "ExposeExperiments", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {
@@ -290,6 +291,7 @@ async fn main() -> std::io::Result<()> {
             .service(v2p::v2p)
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(get_ad_eligibility::get_ad_eligibility))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AwardingTotalsForPost")).to(get_awarding_totals::get_awarding_totals))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ExposeExperiments")).to(expose_experiments::expose_experiments))
