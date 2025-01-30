@@ -95,7 +95,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                     "iconPath": view.community.icon,
                                     "iconShape": "ROUND",
                                     "isJoinButtonShown": view.subscribed == SubscribedType::NotSubscribed,
-                                    "joinSubredditId": null, // TODO
+                                    "joinSubredditId": view.community.reddit_id(),
                                     "isOverflowButtonHidden": false,
                                     "mediaPath": null,
                                     "mediaDomain": null,
