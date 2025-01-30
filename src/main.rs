@@ -23,6 +23,7 @@ mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
 mod get_communities;
+mod get_community;
 mod get_custom_emojis;
 mod get_dev_metadata;
 mod get_dynamic_configs;
@@ -53,6 +54,7 @@ pub struct GraphQlRequest<V> {
 pub trait HackTraitPerson {
     fn reddit_id(&self) -> String;
     fn prefixed_name(&self) -> String;
+    fn formatted_name(&self) -> String;
     fn path(&self) -> String;
 }
 
@@ -63,6 +65,10 @@ impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source
 
     fn prefixed_name(&self) -> String {
         format!("u/{}", self.name)
+    }
+
+    fn formatted_name(&self) -> String {
+        format!("{}@{}", self.name, "todo") // TODO
     }
 
     fn path(&self) -> String {
@@ -190,7 +196,7 @@ impl ResponseError for ProxyError {
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
     use ProxyError::*;
 
-    const WANTED_OPERATIONS: &[&str] = &["SubredditStructuredStyle", "CommentsPageAdPost", "CommentTreeAds", "GetRedditGoldBalance", "EmailPermission", "UserComments", "UserSubmittedPostSets", "ExposeExperiments", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
+    const WANTED_OPERATIONS: &[&str] = &["CommentsPageAdPost", "CommentTreeAds", "GetRedditGoldBalance", "EmailPermission", "UserComments", "UserSubmittedPostSets", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {
@@ -313,6 +319,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ProfileTrophies")).to(get_trophies::get_trophies))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubredditStructuredStyle")).to(get_community::get_community))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserLocation")).to(get_location::get_location))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UsernameAndExperiments")).to(get_username::get_username))
