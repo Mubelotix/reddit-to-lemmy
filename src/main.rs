@@ -20,6 +20,7 @@ mod get_awarding_totals;
 mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
+mod get_comment_tree_ads;
 mod get_communities;
 mod get_community;
 mod get_custom_emojis;
@@ -179,6 +180,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AwardingTotalsForPost")).to(get_awarding_totals::get_awarding_totals))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentTreeAds")).to(get_comment_tree_ads::get_comment_tree_ads))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ExposeExperiments")).to(expose_experiments::expose_experiments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
