@@ -2,6 +2,7 @@
 name = "reddit-to-lemmy"
 version = "0.1.0"
 edition = "2021"
+default-run = "reddit-to-lemmy"
 
 [dependencies]
 actix-web = { version="4.9", features=["cookies"] }
