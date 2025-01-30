@@ -138,7 +138,7 @@ pub async fn get_community(request: HttpRequest, body: Json<GraphQlRequest<GetCo
         }
     }};
 
-    trace!("get_community: {:?}", rep);
+    trace!("get_community: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }
 

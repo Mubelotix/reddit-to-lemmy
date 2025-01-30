@@ -98,6 +98,6 @@ pub async fn get_preferences(request: HttpRequest) -> Result<HttpResponse, GetPr
         }
     }};
     
-    trace!("get_preferences response: {rep}");
+    trace!("get_preferences response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }

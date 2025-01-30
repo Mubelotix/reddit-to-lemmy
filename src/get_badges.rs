@@ -80,6 +80,6 @@ pub async fn get_badges(request: HttpRequest) -> Result<HttpResponse, GetBadgesE
         }
     }};
 
-    trace!("get_badges response: {:?}", rep);
+    trace!("get_badges response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }

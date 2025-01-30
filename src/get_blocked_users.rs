@@ -67,6 +67,6 @@ pub async fn get_blocked_users(request: HttpRequest) -> Result<HttpResponse, Get
         }
     }};
 
-    trace!("get_blocked_users response: {:?}", rep);
+    trace!("get_blocked_users response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }

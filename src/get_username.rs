@@ -57,6 +57,6 @@ pub async fn get_username(request: HttpRequest) -> Result<HttpResponse, GetUsern
         }
     }};
     
-    trace!("get_username response: {rep}");
+    trace!("get_username response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }

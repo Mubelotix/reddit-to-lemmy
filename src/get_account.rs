@@ -141,6 +141,6 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
         }
     }};
 
-    trace!("get_account: {:?}", rep);
+    trace!("get_account: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }

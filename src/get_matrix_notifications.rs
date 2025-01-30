@@ -54,7 +54,7 @@ pub async fn get_matrix_notifications(request: HttpRequest) -> Result<HttpRespon
         }
     }};
 
-    trace!("get_matrix_notifications response: {rep}");
+    trace!("get_matrix_notifications response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }
 

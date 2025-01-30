@@ -104,6 +104,6 @@ pub async fn get_communities(request: HttpRequest, body: Json<GraphQlRequest<Get
         }
     }};
     
-    trace!("get_communities response: {:?}", rep);
+    trace!("get_communities response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }

@@ -169,7 +169,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
         }
     }};
     
-    trace!("get_home_feed response: {:?}", rep);
+    trace!("get_home_feed response: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }
 

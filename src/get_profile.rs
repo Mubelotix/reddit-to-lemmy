@@ -131,7 +131,7 @@ pub async fn get_profile(request: HttpRequest, body: Json<GraphQlRequest<GetProf
         }
     }};
 
-    trace!("get_profile: {:?}", rep);
+    trace!("get_profile: {}", serde_json::to_string(&rep).unwrap_or_default());
     Ok(HttpResponse::Ok().json(rep))
 }
 
