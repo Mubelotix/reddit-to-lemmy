@@ -23,3 +23,22 @@ Build :
 ```bash
 cargo build
 ```
+
+## Running
+
+```bash
+RUST_LOG=reddit_to_lemmy=trace cargo run
+```
+
+## Development
+
+### Running a proxy
+
+This repository also contains a dummy proxy that logs all communications between the official reddit app and the official reddit server.
+This comes very handy to document their private API.
+
+When the constant `WANTED_OPERATIONS` is set in `src/bin/proxy.rs`, the proxy will only log the operations listed in this constant. Please empty the array if you want to log everything.
+
+```bash
+RUST_LOG=proxy=trace cargo run --bin proxy
+```
