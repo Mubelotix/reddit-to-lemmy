@@ -1625,6 +1625,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "markdown"
+version = "1.0.0-alpha.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "790c11786cb51d02938e3eb38276575e1658b1dd8555875f5788a40670a33934"
+dependencies = [
+ "unicode-id",
+]
+
+[[package]]
 name = "matchers"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1965,6 +1974,7 @@ dependencies = [
  "futures",
  "lemmy-client",
  "log",
+ "markdown",
  "serde",
  "serde_json",
 ]
@@ -2725,6 +2735,12 @@ name = "unicase"
 version = "2.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b844d17643ee918803943289730bec8aac480150456169e647ed0b576ba539"
+
+[[package]]
+name = "unicode-id"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10103c57044730945224467c09f71a4db0071c123a0648cc3e818913bde6b561"
 
 [[package]]
 name = "unicode-ident"

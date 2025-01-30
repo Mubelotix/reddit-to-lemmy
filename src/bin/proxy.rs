@@ -48,7 +48,7 @@ impl ResponseError for ProxyError {
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
     use ProxyError::*;
 
-    const WANTED_OPERATIONS: &[&str] = &["CommentsPageAdPost", "CommentTreeAds", "GetRedditGoldBalance", "GetRedditGoldAllTimeBalance", "EmailPermission", "UserComments", "UserSubmittedPostSets", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel", "TrendingSearches", "PopularFeedSdui", "PostsByIds"];
+    const WANTED_OPERATIONS: &[&str] = &["GetRedditGoldBalance", "GetRedditGoldAllTimeBalance", "TrendingSearches", "PopularFeedSdui"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {

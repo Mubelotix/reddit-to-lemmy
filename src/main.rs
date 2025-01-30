@@ -2,7 +2,7 @@
 
 use actix_web::{guard::{Guard, GuardContext}, web, App, HttpRequest, HttpResponse, HttpServer};
 use base64::Engine;
-use lemmy_client::lemmy_api_common::lemmy_db_schema::{source::{community::Community, post::Post}, CommentSortType, SortType};
+use lemmy_client::lemmy_api_common::lemmy_db_schema::{newtypes::DbUrl, source::{community::Community, post::Post}, CommentSortType, SortType};
 use log::{info, warn};
 use serde::{Deserialize, Deserializer};
 
@@ -33,6 +33,7 @@ mod get_inventory_items;
 mod get_location;
 mod get_marketing_nudges;
 mod get_matrix_notifications;
+mod get_posts;
 mod get_preferences;
 mod get_profile;
 mod get_public_showcase;
@@ -81,6 +82,7 @@ pub trait HackTraitCommunity {
     fn reddit_id(&self) -> String;
     fn prefixed_name(&self) -> String;
     fn link(&self) -> String;
+    fn path(&self) -> String;
 }
 
 impl HackTraitCommunity for Community {
@@ -95,11 +97,45 @@ impl HackTraitCommunity for Community {
     fn link(&self) -> String {
         format!("{}@{}", self.name, "todo") // TODO
     }
+
+    fn path(&self) -> String {
+        format!("/c/{}@{}", self.name, "todo") // TODO
+    }
+}
+
+fn markdown_to_text(markdown: &str) -> String {
+    fn text_content(node: markdown::mdast::Node) -> String {
+        use markdown::mdast::Node::*;
+    
+        match node {
+            Root(root) => root.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Blockquote(blockquote) => blockquote.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            FootnoteDefinition(footnote_definition) => footnote_definition.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            List(list) => list.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Delete(delete) => format!("-{}-", delete.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" ")),
+            Emphasis(emphasis) => emphasis.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Link(link) => link.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Strong(strong) => strong.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Text(text) => text.value,
+            Heading(heading) => heading.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            ListItem(list_item) => list_item.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Paragraph(paragraph) => paragraph.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            _ => String::new()
+        }
+    }
+
+    let ast = match markdown::to_mdast(markdown, &markdown::ParseOptions::default()) {
+        Ok(ast) => ast,
+        Err(e) => return format!("Invalid markdown: {e}"),
+    };
+    
+    text_content(ast)
 }
 
 pub trait HackTraitPost {
     fn reddit_id(&self) -> String;
     fn reddit_id_base64(&self) -> String;
+    fn canonical_url(&self) -> String;
 }
 
 impl HackTraitPost for Post {
@@ -109,6 +145,24 @@ impl HackTraitPost for Post {
 
     fn reddit_id_base64(&self) -> String {
         base64::prelude::BASE64_STANDARD.encode(self.reddit_id())
+    }
+
+    fn canonical_url(&self) -> String {
+        format!("https://jlai.lu/post/{}", self.id)
+    }
+}
+
+pub trait HackTraitMediaSource {
+    fn as_media_source(&self) -> Option<serde_json::Value>;
+}
+
+impl HackTraitMediaSource for Option<DbUrl> {
+    fn as_media_source(&self) -> Option<serde_json::Value> {
+        self.as_ref().map(|url| serde_json::json! {{
+            "__typename": "MediaSource",
+            "url": url,
+            "dimensions": { "width": 256, "height": 256 }
+        }})
     }
 }
 
@@ -198,6 +252,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("HomeFeedSdui")).to(get_home_feed::get_home_feed))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("PostsByIds")).to(get_posts::get_posts))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ProfileTrophies")).to(get_trophies::get_trophies))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
