@@ -37,6 +37,7 @@ mod get_matrix_notifications;
 mod get_preferences;
 mod get_profile;
 mod get_public_showcase;
+mod get_recommendations;
 mod get_subscribed_count;
 mod get_trophies;
 mod get_username;
@@ -183,6 +184,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentTreeAds")).to(get_comment_tree_ads::get_comment_tree_ads))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("CommentsPageAdPost")).to(get_comments_page_ad::get_comments_page_ad))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("DiscoverBarRecommendations")).to(get_recommendations::get_recommendations))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ExposeExperiments")).to(expose_experiments::expose_experiments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
