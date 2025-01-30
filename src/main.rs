@@ -35,6 +35,7 @@ mod get_preferences;
 mod get_profile;
 mod get_public_showcase;
 mod get_subscribed_count;
+mod get_trophies;
 mod get_username;
 mod get_vaults;
 mod register_mobile_push_token;
@@ -307,6 +308,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("HomeFeedSdui")).to(get_home_feed::get_home_feed))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ProfileTrophies")).to(get_trophies::get_trophies))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
