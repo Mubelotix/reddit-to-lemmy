@@ -15,6 +15,7 @@ mod w3_reporting_policy;
 mod v2c;
 mod v2p;
 
+mod expose_experiments;
 mod get_account;
 mod get_ad_eligibility;
 mod get_awards_for_sub;
@@ -184,7 +185,7 @@ impl ResponseError for ProxyError {
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
     use ProxyError::*;
 
-    const WANTED_OPERATIONS: &[&str] = &["GetRedditGoldBalance", "UserProfile", "EmailPermission"];
+    const WANTED_OPERATIONS: &[&str] = &["GetDevPlatformMetadata", "SubredditStructuredStyle", "CommentsPageAdPost", "CommentTreeAds", "GetCustomEmojisStatus", "AwardingTotalsForPost", "GetRedditGoldBalance", "EmailPermission", "UserComments", "ProfileTrophies", "UserSubmittedPostSets", "ExposeExperiments", "GetEarnedGoldBalance", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {
@@ -289,6 +290,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BadgeCount")).to(get_badges::get_badges))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("BlockedRedditors")).to(get_blocked_users::get_blocked_users))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ExposeExperiments")).to(expose_experiments::expose_experiments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccount")).to(get_account::get_account))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAllVaults")).to(get_vaults::get_vaults))
