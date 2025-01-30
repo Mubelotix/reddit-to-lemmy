@@ -28,6 +28,7 @@ mod get_custom_emojis;
 mod get_dev_metadata;
 mod get_dynamic_configs;
 mod get_earned_gold;
+mod get_experiments;
 mod get_home_feed;
 mod get_inventory_items;
 mod get_location;
@@ -322,7 +323,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubredditStructuredStyle")).to(get_community::get_community))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserLocation")).to(get_location::get_location))
-            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UsernameAndExperiments")).to(get_username::get_username))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UsernameAndExperiments")).to(get_experiments::get_experiments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserProfile")).to(get_profile::get_profile))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserSubredditListItems")).to(get_communities::get_communities))
             .route("/gql-fed.reddit.com/", web::to(|req: HttpRequest| async move {
