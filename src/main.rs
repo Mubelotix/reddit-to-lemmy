@@ -23,6 +23,7 @@ mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
 mod get_communities;
+mod get_custom_emojis;
 mod get_dev_metadata;
 mod get_dynamic_configs;
 mod get_earned_gold;
@@ -189,7 +190,7 @@ impl ResponseError for ProxyError {
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
     use ProxyError::*;
 
-    const WANTED_OPERATIONS: &[&str] = &["SubredditStructuredStyle", "CommentsPageAdPost", "CommentTreeAds", "GetCustomEmojisStatus", "GetRedditGoldBalance", "EmailPermission", "UserComments", "ProfileTrophies", "UserSubmittedPostSets", "ExposeExperiments", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
+    const WANTED_OPERATIONS: &[&str] = &["SubredditStructuredStyle", "CommentsPageAdPost", "CommentTreeAds", "GetRedditGoldBalance", "EmailPermission", "UserComments", "UserSubmittedPostSets", "ExposeExperiments", "DiscoverBarRecommendations", "GetMatrixChatUsersByIds", "GetPrivateMessages", "GetInboxNotificationFeed", "GetNotificationSettingsLayoutByChannel"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {
@@ -300,6 +301,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAllVaults")).to(get_vaults::get_vaults))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAwardsForSubreddit")).to(get_awards_for_sub::get_awards_for_sub))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetCustomEmojisStatus")).to(get_custom_emojis::get_custom_emojis))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetDevPlatformMetadata")).to(get_dev_metadata::get_dev_metadata))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEarnedGoldBalance")).to(get_earned_gold::get_earned_gold_balance))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
