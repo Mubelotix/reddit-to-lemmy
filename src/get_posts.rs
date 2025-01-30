@@ -144,7 +144,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                 "thumbnail": details.post_view.post.thumbnail_url.as_media_source(),
                 "media": null, // TODO
                 "moderationInfo": null,
-                "suggestedCommentSort": "CONFIDENCE",
+                "suggestedCommentSort": "BLANK",
                 "permalink": details.post_view.post.canonical_url(),
                 "isSelfPost": false, // TODO
                 "postHint": null, // can also be LINK and HOSTED_VIDEO
@@ -187,10 +187,10 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                     "path": details.community_view.community.path(),
                     "styles": {
                         "icon": details.community_view.community.icon,
-                        "legacyIcon": details.community_view.community.icon.as_media_source(),
+                        "legacyIcon": null,
                         "primaryColor": null,
                         "bannerBackgroundImage": details.community_view.community.banner,
-                        "legacyBannerBackgroundImage": details.community_view.community.banner.as_media_source(),
+                        "legacyBannerBackgroundImage": "",
                         "legacyPrimaryColor": null
                     },
                     "modPermissions": null,
