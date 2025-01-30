@@ -84,7 +84,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                 {
                                     "__typename": "MetadataCell",
                                     "id": format!("MetadataCell-{}", view.post.reddit_id()),
-                                    "createdAt": view.post.published,
+                                    "createdAt": view.post.published.format("%Y-%m-%dT%H:%M:%S%.6f%z").to_string(),
                                     "authorName": view.creator.prefixed_name(),
                                     "color": {
                                         "__typename": "CustomCellColor",
@@ -113,7 +113,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                 { // TODO: Support GalleryCell and ImageCell
                                     "__typename": "PreviewTextCell",
                                     "id": format!("PreviewTextCell-{}", view.post.reddit_id()),
-                                    "text": view.post.body,
+                                    "text": view.post.body.as_deref().unwrap_or_default(),
                                     "numberOfLines": 4,
                                     "isRead": view.read
                                 },
@@ -123,7 +123,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                     "isScoreHidden": false,
                                     "isModeratable": false, // TODO
                                     "commentCount": view.counts.comments,
-                                    "shareImagePath": view.post.thumbnail_url,
+                                    "shareImagePath": null, // view.post.thumbnail_url,
                                     "isAwardHidden": true,
                                     "score": view.counts.score,
                                     "voteState": match view.my_vote {

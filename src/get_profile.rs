@@ -83,7 +83,7 @@ pub async fn get_profile(request: HttpRequest, body: Json<GraphQlRequest<GetProf
                 "isAcceptingPMs": true,
                 "isVerified": false,
                 "profile": {
-                    "createdAt": details.person_view.person.published,
+                    "createdAt": details.person_view.person.published.format("%Y-%m-%dT%H:%M:%S%.6f%z").to_string(),
                     "subscribersCount": 0,
                     "allowedPostTypes": [],
                     "isUserBanned": details.person_view.person.banned,
@@ -109,8 +109,14 @@ pub async fn get_profile(request: HttpRequest, body: Json<GraphQlRequest<GetProf
                     "styles": {
                         "icon": details.person_view.person.avatar,
                         "legacyPrimaryColor": null,
-                        "legacyIcon": { "url": details.person_view.person.avatar, "dimensions": { "width": 256, "height": 256 } }, // FIXME: Dimensions
-                        "profileBanner": { "url": details.person_view.person.banner, "dimensions": { "width": 256, "height": 256 } } // FIXME: Dimensions
+                        "legacyIcon": details.person_view.person.avatar.as_ref().map(|url| json!{{
+                            "url": url,
+                            "dimensions": { "width": 256, "height": 256 } // FIXME: Dimensions
+                        }}),
+                        "profileBanner": details.person_view.person.banner.as_ref().map(|url| json!{{
+                            "url": url,
+                            "dimensions": { "width": 256, "height": 256 } // FIXME: Dimensions
+                        }})
                     },
                 },
                 "profileExemptedExperiments": [],

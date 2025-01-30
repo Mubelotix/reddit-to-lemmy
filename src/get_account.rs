@@ -66,7 +66,7 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
         "data": {
             "identity": {
                 "id": my_user.local_user_view.person.reddit_id(),
-                "createdAt": my_user.local_user_view.person.published,
+                "createdAt": my_user.local_user_view.person.published.format("%Y-%m-%dT%H:%M:%S%.6f%z").to_string(),
                 "email": my_user.local_user_view.local_user.email,
                 "isEmailPermissionRequired": false,
                 "isSuspended": my_user.local_user_view.person.banned,
@@ -100,7 +100,7 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
                     "snoovatarIcon": { "url": my_user.local_user_view.person.avatar },
                     "profile": {
                         "id": my_user.local_user_view.person.reddit_id(),
-                        "createdAt": my_user.local_user_view.person.published,
+                        "createdAt": my_user.local_user_view.person.published.format("%Y-%m-%dT%H:%M:%S%.6f%z").to_string(),
                         "isUserBanned": my_user.local_user_view.person.banned,
                         "isDefaultBanner": my_user.local_user_view.person.banner.is_none(),
                         "path": my_user.local_user_view.person.path(),
@@ -121,8 +121,14 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
                         "styles": {
                             "icon": my_user.local_user_view.person.avatar,
                             "legacyPrimaryColor": null,
-                            "legacyIcon": { "url": my_user.local_user_view.person.avatar, "dimensions": { "width": 256, "height": 256 } }, // FIXME: Dimensions
-                            "profileBanner": { "url": my_user.local_user_view.person.banner, "dimensions": { "width": 256, "height": 256 } } // FIXME: Dimensions
+                            "legacyIcon": my_user.local_user_view.person.avatar.as_ref().map(|url| json! {{
+                                "url": url,
+                                "dimensions": { "width": 256, "height": 256 } // FIXME: Dimensions
+                            }}),
+                            "profileBanner": my_user.local_user_view.person.banner.as_ref().map(|url| json! {{
+                                "url": url,
+                                "dimensions": { "width": 256, "height": 256 } // FIXME: Dimensions
+                            }})
                         },
                         "karma": {
                             "total": my_user.local_user_view.counts.post_score + my_user.local_user_view.counts.comment_score,
