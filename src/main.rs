@@ -28,6 +28,7 @@ mod get_location;
 mod get_marketing_nudges;
 mod get_matrix_notifications;
 mod get_preferences;
+mod get_profile;
 mod get_public_showcase;
 mod get_subscribed_count;
 mod get_username;
@@ -182,6 +183,8 @@ impl ResponseError for ProxyError {
 
 async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl Responder, ProxyError> {
     use ProxyError::*;
+
+    const WANTED_OPERATIONS: &[&str] = &["GetRedditGoldBalance", "UserProfile", "EmailPermission"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {
@@ -223,7 +226,7 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     let mut target_response = match request.method() == Method::GET || body.is_empty() {
         true => target_request.send().await.map_err(SendRequest)?,
         false => target_request.send_body(body).await.map_err(SendRequest)?,
-    };
+    }; 
     let response_body = target_response.body().await.map_err(ResponsePayload)?;
 
     let response_body_readable = target_response.headers().get("content-type").map(|ct| ct.to_str().unwrap()).map(|ct| {
@@ -249,8 +252,12 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
         false => format!("{response:?}\nbinary data"),
     };
 
+    #[allow(clippy::const_is_empty)]
     if target_domain != "matrix.redditspace.com" {
-        println!("{log_part1}\n{log_part2}");
+        let appolo_operation = request.headers().get("x-apollo-operation-name").and_then(|o| o.to_str().ok()).unwrap_or("unknown");
+        if WANTED_OPERATIONS.is_empty() || WANTED_OPERATIONS.contains(&appolo_operation) {
+            println!("{log_part1}\n{log_part2}");
+        }
     }
 
     Ok(response)
@@ -262,8 +269,7 @@ impl Guard for Apollo {
     fn check(&self, req: &GuardContext) -> bool {
         req.head().headers().get("x-apollo-operation-name").map(|o| o == self.0).unwrap_or(false)
     }
-}
-
+} 
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -298,6 +304,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserLocation")).to(get_location::get_location))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UsernameAndExperiments")).to(get_username::get_username))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserProfile")).to(get_profile::get_profile))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserSubredditListItems")).to(get_communities::get_communities))
             .route("/gql-fed.reddit.com/", web::to(|req: HttpRequest| async move {
                     let operation_name = req.headers().get("x-apollo-operation-name").map(|o| o.to_str().unwrap()).unwrap_or("unknown");
