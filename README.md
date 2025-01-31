@@ -4,6 +4,8 @@ A compatibility layer that proxies Reddit API requests to Lemmy API requests.
 
 This allows using the official Reddit mobile app to browse [Lemmy, its federated alternative](https://join-lemmy.org/).
 
+Why? Because fuck spez
+
 ## Usage
 
 You must patch your Reddit app to change the API endpoint. See [our revanced patches](https://github.com/Mubelotix/my-revanced-patches) for more information.
