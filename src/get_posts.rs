@@ -72,6 +72,8 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
         }
     });
 
+    // TODO: support typeHint: VIDEO
+
     let rep = json! {{
         "data": {
             "postsInfoByIds": posts.map(|details| json! {{
@@ -140,9 +142,42 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                     "profile": { "isNsfw": false },
                     "accountType": null,
                 },
-                "isThumbnailEnabled": false, // TODO: Investigate this
+                "isThumbnailEnabled": details.post_view.post.thumbnail_url.is_some(), // FIXME: not sure if this is the image or link page preview
                 "thumbnail": details.post_view.post.thumbnail_url.as_media_source(),
-                "media": null, // TODO
+                "media": match details.post_view.post.is_image() {
+                    true => Some(json! {{
+                        "__typename": "Media",
+                        "previewMediaId": details.post_view.post.url,
+                        "still": {
+                            "__typename": "StillMedia",
+                            "source": details.post_view.post.url.as_media_source(),
+                            "small": details.post_view.post.url.as_media_source(),
+                            "medium": details.post_view.post.url.as_media_source(),
+                            "large": details.post_view.post.url.as_media_source(),
+                            "xlarge": details.post_view.post.url.as_media_source(),
+                            "xxlarge": details.post_view.post.url.as_media_source(),
+                            "xxxlarge": details.post_view.post.url.as_media_source(),
+                            "altText": details.post_view.post.alt_text,
+                        },
+                        "obfuscated_still": {
+                            "__typename": "StillMedia",
+                            "source": null,
+                            "small": null,
+                            "medium": null,
+                            "large": null,
+                            "xlarge": null,
+                            "xxlarge": null,
+                            "xxxlarge": null                            
+                        },
+                        "animated": null,
+                        "streaming": null,
+                        "video": null,
+                        "packagedMedia": null,
+                        "typeHint": "IMAGE",
+                        "download": null,
+                    }}),
+                    false => None,
+                },
                 "moderationInfo": null,
                 "suggestedCommentSort": "BLANK",
                 "permalink": details.post_view.post.canonical_url(),
