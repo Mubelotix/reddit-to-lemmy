@@ -81,7 +81,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                 "createdAt": details.post_view.post.published.format("%Y-%m-%dT%H:%M:%S%.6f%z").to_string(),
                 "editedAt": details.post_view.post.updated.map(|u| u.format("%Y-%m-%dT%H:%M:%S%.6f%z").to_string()),
                 "postTitle": details.post_view.post.name,
-                "url": details.post_view.post.canonical_url(),
+                "url": "https://www.reddit.com/r/conseiljuridique/comments/1idr472/%C3%A9tudiante_en_licence_de_droit_jai_besoin_daide/",
                 "content": details.post_view.post.body.as_ref().map(|markdown| {
                     let html = markdown::to_html(markdown);
                     let text = markdown_to_text(markdown);
@@ -99,7 +99,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                         }
                     }}
                 }),
-                "domain": "jlai.lu",
+                "domain": details.post_view.post.url.as_ref().and_then(|url| url.domain()).unwrap_or("unknown"),
                 "isSpoiler": false, // TODO
                 "isNsfw": details.post_view.post.nsfw,
                 "isCommercialCommunication": false,
@@ -146,12 +146,12 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                 "moderationInfo": null,
                 "suggestedCommentSort": "BLANK",
                 "permalink": details.post_view.post.canonical_url(),
-                "isSelfPost": false, // TODO
+                "isSelfPost": details.post_view.post.url.is_none(),
                 "postHint": null, // can also be LINK and HOSTED_VIDEO
                 "postEventInfo": null,
                 "gallery": null,
                 "outboundLink": {
-                    "url": details.post_view.post.canonical_url(),
+                    "url": details.post_view.post.url.as_ref().map(|url| url.to_string()).unwrap_or(details.post_view.post.canonical_url()),
                     "expiresAt": "2999-01-30T22:29:09.865000+0000",
                 },
                 "postStats": {
