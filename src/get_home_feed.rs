@@ -4,7 +4,7 @@
 
 use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
 use base64::{prelude::BASE64_STANDARD, Engine};
-use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{SortType, SubscribedType}, lemmy_db_views::structs::PaginationCursor, post::GetPosts, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{ListingType, SortType, SubscribedType}, lemmy_db_views::structs::PaginationCursor, post::GetPosts, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
 use crate::{get_jwt, markdown_to_text, GraphQlRequest, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
@@ -54,6 +54,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
     let page_cursor = body.variables.after.as_ref().and_then(|a| a.strip_prefix("t3_")).map(|a| PaginationCursor(a.to_string()));
 
     let posts = client.list_posts(LemmyRequest { body: GetPosts {
+        type_: Some(ListingType::Subscribed), // TODO
         sort: body.variables.sort,
         page_cursor,
         ..GetPosts::default()
@@ -67,7 +68,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                     "pageInfo": {
                         "endCursor": posts.next_page.map(|c| format!("t3_{}", c.0))
                     },
-                    "edges": posts.posts.into_iter().map(|view| json! {{
+                    "edges": posts.posts.into_iter().skip(0).take(1).map(|view| json! {{
                         "__typename": "FeedElementEdge",
                         "node": {
                             "__typename": "CellGroup",
@@ -106,12 +107,28 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                     "title": view.post.name,
                                     "isVisited": view.read
                                 },
-                                { // TODO: Support GalleryCell and ImageCell
-                                    "__typename": "PreviewTextCell",
-                                    "id": format!("PreviewTextCell-{}", view.post.reddit_id()),
-                                    "text": view.post.body.as_deref().map(markdown_to_text).unwrap_or_default(),
-                                    "numberOfLines": 4,
-                                    "isRead": view.read
+                                match view.post.is_image() { // TODO: Support GalleryCell
+                                    true => json! {{
+                                        "__typename": "ImageCell",
+                                        "id": format!("ImageCell-{}", view.post.reddit_id()),
+                                        "media": {
+                                            "__typename": "CellMediaSource",
+                                            "path": view.post.url,
+                                            "isObfuscated": false,
+                                            "obfuscatedPath": null,
+                                            "size": {
+                                                "width": 1000, // FIXME: Not having the proper dimensions fucks up the aspect ratio
+                                                "height": 1000,
+                                            }
+                                        }
+                                    }},
+                                    false => json! {{
+                                        "__typename": "PreviewTextCell",
+                                        "id": format!("PreviewTextCell-{}", view.post.reddit_id()),
+                                        "text": view.post.body.as_deref().map(markdown_to_text).unwrap_or_default(),
+                                        "numberOfLines": 4,
+                                        "isRead": view.read
+                                    }},
                                 },
                                 {
                                     "__typename": "ActionCell",
@@ -119,7 +136,10 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                     "isScoreHidden": false,
                                     "isModeratable": false, // TODO
                                     "commentCount": view.counts.comments,
-                                    "shareImagePath": null, // view.post.thumbnail_url,
+                                    "shareImagePath": match view.post.is_image() {
+                                        true => view.post.url.clone(),
+                                        false => None,
+                                    },
                                     "isAwardHidden": true,
                                     "score": view.counts.score,
                                     "voteState": match view.my_vote {
@@ -151,7 +171,10 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                             "crosspostCells": [ // TODO
                                 {"__typename": "MetadataCell"},
                                 {"__typename": "TitleCell"},
-                                {"__typename": "PreviewTextCell"},
+                                {"__typename": match view.post.is_image() {
+                                    true => "ImageCell",
+                                    false => "PreviewTextCell",
+                                }},
                                 {"__typename": "ActionCell"},
                                 {"__typename": "MarginCell"}
                             ]

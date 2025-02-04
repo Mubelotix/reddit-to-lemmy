@@ -12,6 +12,7 @@ mod loid;
 mod w3_reporting;
 mod v2c;
 mod v2p;
+mod pictrs;
 mod rtjson;
 
 mod ads;
@@ -138,6 +139,7 @@ pub trait HackTraitPost {
     fn reddit_id(&self) -> String;
     fn reddit_id_base64(&self) -> String;
     fn canonical_url(&self) -> String;
+    fn is_image(&self) -> bool;
 }
 
 impl HackTraitPost for Post {
@@ -151,6 +153,10 @@ impl HackTraitPost for Post {
 
     fn canonical_url(&self) -> String {
         format!("https://jlai.lu/post/{}", self.id)
+    }
+
+    fn is_image(&self) -> bool {
+        self.url.is_some() && self.url_content_type.as_ref().map(|ct| ct.starts_with("image/")).unwrap_or(false)
     }
 }
 
@@ -233,6 +239,7 @@ async fn main() -> std::io::Result<()> {
             .service(loid::loid)
             .service(v2c::v2c)
             .service(v2p::v2p)
+            .service(pictrs::pictrs)
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AdEligibilityForUser")).to(ads::get_ad_eligibility))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AllDynamicConfigs")).to(get_dynamic_configs::get_dynamic_configs))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("AwardingTotalsForPost")).to(get_awarding_totals::get_awarding_totals))
