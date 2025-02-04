@@ -23,6 +23,7 @@ mod get_awarding_totals;
 mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
+mod get_channels;
 mod get_communities;
 mod get_community;
 mod get_custom_emojis;
@@ -260,6 +261,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetRealUsername")).to(get_username::get_username))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetSubredditChannels")).to(get_channels::get_channels))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("HomeFeedSdui")).to(get_home_feed::get_home_feed))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges))
