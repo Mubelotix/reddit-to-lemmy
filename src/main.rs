@@ -12,6 +12,7 @@ mod loid;
 mod w3_reporting_policy;
 mod v2c;
 mod v2p;
+mod rtjson;
 
 mod ads;
 

@@ -376,7 +376,7 @@ fn inner(node: Node) -> Element {
     }
 }
 
-fn markdown_to_rtjson(markdown: &str) -> String {
+pub fn markdown_to_rtjson(markdown: &str) -> String {
     let ast = match markdown::to_mdast(markdown, &ParseOptions::default()) {
         Ok(ast) => ast,
         Err(e) => return format!("Invalid markdown: {e}"),
