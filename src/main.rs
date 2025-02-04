@@ -23,6 +23,7 @@ mod get_awarding_totals;
 mod get_awards_for_sub;
 mod get_badges;
 mod get_blocked_users;
+mod get_channel_recommendations;
 mod get_channels;
 mod get_communities;
 mod get_community;
@@ -255,6 +256,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAccountPreferences")).to(get_preferences::get_preferences))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAllVaults")).to(get_vaults::get_vaults))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetAwardsForSubreddit")).to(get_awards_for_sub::get_awards_for_sub))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetChatChannelsRecommendations")).to(get_channel_recommendations::get_channel_recommendations))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetCustomEmojisStatus")).to(get_custom_emojis::get_custom_emojis))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetDevPlatformMetadata")).to(get_dev_metadata::get_dev_metadata))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEarnedGoldBalance")).to(get_earned_gold::get_earned_gold_balance))
