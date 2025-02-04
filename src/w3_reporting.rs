@@ -30,7 +30,7 @@
 //  }
 // binary dat
 
-use actix_web::{get, HttpResponse};
+use actix_web::{get, post, HttpResponse};
 use log::debug;
 
 #[get("/w3-reporting.reddit.com/policy")]
@@ -58,4 +58,11 @@ pub async fn w3_reporting_policy() -> HttpResponse {
         .append_header(("server", "Varnish"))
         .append_header(("report-to", "{\"group\": \"w3-reporting\", \"max_age\": 14400, \"include_subdomains\": true, \"endpoints\": [{ \"url\": \"https://w3-reporting.reddit.com/reports\" }]}"))
         .finish()
+}
+
+#[post("/w3-reporting.reddit.com/reports")]
+pub async fn w3_report() -> HttpResponse {
+    debug!("w3_report");
+
+    HttpResponse::Ok().finish()
 }

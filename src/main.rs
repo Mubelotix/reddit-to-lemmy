@@ -9,7 +9,7 @@ use serde::{Deserialize, Deserializer};
 mod login;
 mod session;
 mod loid;
-mod w3_reporting_policy;
+mod w3_reporting;
 mod v2c;
 mod v2p;
 mod rtjson;
@@ -228,7 +228,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(login::login)
             .service(session::session)
-            .service(w3_reporting_policy::w3_reporting_policy)
+            .service(w3_reporting::w3_reporting_policy)
+            .service(w3_reporting::w3_report)
             .service(loid::loid)
             .service(v2c::v2c)
             .service(v2p::v2p)
