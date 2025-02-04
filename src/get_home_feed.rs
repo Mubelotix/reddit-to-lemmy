@@ -4,7 +4,7 @@
 
 use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
 use base64::{prelude::BASE64_STANDARD, Engine};
-use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{SortType, SubscribedType}, post::GetPosts, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{SortType, SubscribedType}, lemmy_db_views::structs::PaginationCursor, post::GetPosts, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
 use crate::{get_jwt, markdown_to_text, GraphQlRequest, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
@@ -33,23 +33,16 @@ impl ResponseError for GetHomeFeedError {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetHomeFeedVariables {
-    // feed_context_input: FeedContextInput,
     #[serde(deserialize_with = "HackTraitSortType::deserialize_from_reddit")]
     sort: Option<SortType>,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct FeedContextInput {
-    // theme_mode: String,
-    // layout: String,
+    after: Option<String>,
 }
 
 pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHomeFeedVariables>>) -> Result<HttpResponse, GetHomeFeedError> {
-    debug!("get_home_feed");
+    debug!("get_home_feed: {:?}", body.variables);
 
     let jwt = get_jwt(&request).ok_or(Authentication)?;
 
@@ -58,8 +51,11 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
         secure: true
     });
 
+    let page_cursor = body.variables.after.as_ref().and_then(|a| a.strip_prefix("t3_")).map(|a| PaginationCursor(a.to_string()));
+
     let posts = client.list_posts(LemmyRequest { body: GetPosts {
         sort: body.variables.sort,
+        page_cursor,
         ..GetPosts::default()
     }, jwt: Some(jwt.clone()) }).await.map_err(ListPosts)?;
 
@@ -69,7 +65,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                 "elements": {
                     "dist": 7,
                     "pageInfo": {
-                        "endCursor": posts.next_page.map(|c| BASE64_STANDARD.encode(format!("t3_{}", c.0)))
+                        "endCursor": posts.next_page.map(|c| format!("t3_{}", c.0))
                     },
                     "edges": posts.posts.into_iter().map(|view| json! {{
                         "__typename": "FeedElementEdge",
