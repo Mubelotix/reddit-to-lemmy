@@ -10,7 +10,7 @@ use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{newtypes::PostId, Subscr
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_jwt, markdown_to_text, GraphQlRequest, HackTraitCommunity, HackTraitMediaSource, HackTraitPerson, HackTraitPost};
+use crate::{get_jwt, markdown_to_text, rtjson::markdown_to_rtjson, GraphQlRequest, HackTraitCommunity, HackTraitMediaSource, HackTraitPerson, HackTraitPost};
 use GetPostsError::*;
 
 #[derive(Debug)]
@@ -85,7 +85,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                 "content": details.post_view.post.body.as_ref().map(|markdown| {
                     let html = markdown::to_html(markdown);
                     let text = markdown_to_text(markdown);
-                    let richtext = serde_json::to_string(&json! {{"document": [{"c": [{"e": "text","t": text}], "e": "par"}]}}).unwrap();
+                    let richtext = markdown_to_rtjson(markdown);
 
                     json! {{
                         "markdown": markdown,
