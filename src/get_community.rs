@@ -116,7 +116,7 @@ pub async fn get_community(request: HttpRequest, body: Json<GraphQlRequest<GetCo
                             "moderators": details.moderators.iter().map(|view| {
                                 json! {{
                                     "redditor": {
-                                        "name": view.moderator.display_name,
+                                        "name": view.moderator.display_name.as_ref().unwrap_or(&view.moderator.name),
                                     },
                                     "flair": null
                                 }}

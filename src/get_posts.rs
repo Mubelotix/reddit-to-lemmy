@@ -132,7 +132,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                 "authorInfo": {
                     "__typename": "Redditor",
                     "id": details.post_view.creator.reddit_id(),
-                    "name": details.post_view.creator.display_name,
+                    "name": details.post_view.creator.display_name.as_ref().unwrap_or(&details.post_view.creator.name),
                     "isCakeDayNow": false, // TODO
                     "newIcon": details.post_view.creator.avatar.as_media_source(),
                     "iconSmall": details.post_view.creator.avatar.as_media_source(),

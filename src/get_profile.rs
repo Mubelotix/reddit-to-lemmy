@@ -92,7 +92,7 @@ pub async fn get_profile(request: HttpRequest, body: Json<GraphQlRequest<GetProf
                     "isDefaultBanner": details.person_view.person.banner.is_none(),
                     "path": details.person_view.person.path(),
                     "isNsfw": false,
-                    "title": details.person_view.person.display_name.unwrap_or(details.person_view.person.name.clone()),
+                    "title": details.person_view.person.display_name.as_ref().unwrap_or(&details.person_view.person.name),
                     "publicDescriptionText": details.person_view.person.bio.unwrap_or_default(),
                     "isSubscribed": false,
                     "moderatorsInfo": {

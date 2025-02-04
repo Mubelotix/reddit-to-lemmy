@@ -110,7 +110,7 @@ pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccoun
                         "allowedPostTypes": ["LINK", "IMAGE", "VIDEO", "TEXT", "SPOILER", "POLL", "GALLERY"],
                         "description": { "richtext": null },
                         "isNsfw": false,
-                        "title": my_user.local_user_view.person.display_name,
+                        "title": my_user.local_user_view.person.display_name.as_ref().unwrap_or(&my_user.local_user_view.person.name),
                         "subscribersCount": 0,
                         "isDefaultIcon": my_user.local_user_view.person.avatar.is_none(),
                         "isContributor": false,
