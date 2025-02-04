@@ -7,7 +7,7 @@ use base64::{prelude::BASE64_STANDARD, Engine};
 use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{SortType, SubscribedType}, post::GetPosts, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_jwt, GraphQlRequest, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
+use crate::{get_jwt, markdown_to_text, GraphQlRequest, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
 use log::{debug, trace};
 use GetHomeFeedError::*;
 
@@ -92,7 +92,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                     },
                                     "detailsString": view.community.prefixed_name(),
                                     "detailsLink": view.community.link(),
-                                    "iconPath": view.community.icon,
+                                    "iconPath": view.community.icon.as_ref().map(|i| i.to_string()).unwrap_or_default(),
                                     "iconShape": "ROUND",
                                     "isJoinButtonShown": view.subscribed == SubscribedType::NotSubscribed,
                                     "joinSubredditId": view.community.reddit_id(),
@@ -113,7 +113,7 @@ pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHo
                                 { // TODO: Support GalleryCell and ImageCell
                                     "__typename": "PreviewTextCell",
                                     "id": format!("PreviewTextCell-{}", view.post.reddit_id()),
-                                    "text": view.post.body.as_deref().unwrap_or_default(),
+                                    "text": view.post.body.as_deref().map(markdown_to_text).unwrap_or_default(),
                                     "numberOfLines": 4,
                                     "isRead": view.read
                                 },
