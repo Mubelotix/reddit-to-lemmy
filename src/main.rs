@@ -31,6 +31,7 @@ mod get_custom_emojis;
 mod get_dev_metadata;
 mod get_dynamic_configs;
 mod get_earned_gold;
+mod get_eligible_experiences;
 mod get_email_permission;
 mod get_experiments;
 mod get_home_feed;
@@ -260,6 +261,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetCustomEmojisStatus")).to(get_custom_emojis::get_custom_emojis))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetDevPlatformMetadata")).to(get_dev_metadata::get_dev_metadata))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEarnedGoldBalance")).to(get_earned_gold::get_earned_gold_balance))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEligibleUxExperiences")).to(get_eligible_experiences::get_eligible_experiences))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetRealUsername")).to(get_username::get_username))
