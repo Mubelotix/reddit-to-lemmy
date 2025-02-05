@@ -42,7 +42,7 @@ pub struct SearchVariables {
 }
 
 pub async fn search(request: HttpRequest, body: Json<GraphQl<SearchVariables>>) -> Result<HttpResponse, SearchError> {
-    debug!("search");
+    debug!("search: {:?}", body.variables);
     
     let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 

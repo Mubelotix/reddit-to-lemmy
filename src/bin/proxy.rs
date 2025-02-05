@@ -49,7 +49,7 @@ async fn proxy(request: HttpRequest, mut payload: web::Payload) -> Result<impl R
     use ProxyError::*;
 
     const WANTED_OPERATIONS: &[&str] = &[];
-    // const WANTED_OPERATIONS: &[&str] = &["GetRedditGoldBalance", "GetRedditGoldAllTimeBalance", "TrendingSearches", "PopularFeedSdui", "UpdateSubredditSubscriptions", "GetRecommendationChaining", "HomeFeedPostsByIds", "PostComments"];
+    // const WANTED_OPERATIONS: &[&str] = &["GetRedditGoldBalance", "GetRedditGoldAllTimeBalance", "TrendingSearches", "PopularFeedSdui", "UpdateSubredditSubscriptions", "GetRecommendationChaining", "HomeFeedPostsByIds", "PostComments", "CreateShareUrl", "UpdatePostVoteState"];
     
     let mut body = Vec::new();
     while let Some(item) = payload.next().await {

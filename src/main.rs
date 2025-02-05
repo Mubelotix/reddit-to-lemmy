@@ -2,9 +2,10 @@
 
 use actix_web::{guard::{Guard, GuardContext}, web, App, HttpRequest, HttpResponse, HttpServer};
 use base64::Engine;
-use lemmy_client::{lemmy_api_common::lemmy_db_schema::{newtypes::DbUrl, source::{community::Community, post::Post}, CommentSortType, SortType}, ClientOptions, LemmyClient};
+use lemmy_client::{lemmy_api_common::lemmy_db_schema::{newtypes::DbUrl, source::{comment::Comment, community::Community, post::Post}, CommentSortType, SortType}, ClientOptions, LemmyClient};
 use log::{info, warn};
 use serde::{Deserialize, Deserializer};
+use serde_json::{json, Value};
 
 mod login;
 mod session;
@@ -25,6 +26,7 @@ mod get_badges;
 mod get_blocked_users;
 mod get_channel_recommendations;
 mod get_channels;
+mod get_comments;
 mod get_communities;
 mod get_community;
 mod get_custom_emojis;
@@ -65,6 +67,7 @@ pub trait HackTraitPerson {
     fn prefixed_name(&self) -> String;
     fn formatted_name(&self) -> String;
     fn path(&self) -> String;
+    fn as_author_info(&self) -> Value;
 }
 
 impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source::person::Person {
@@ -82,6 +85,20 @@ impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source
 
     fn path(&self) -> String {
         format!("/u/{}@{}", self.name, "todo") // TODO
+    }
+
+    fn as_author_info(&self) -> Value {
+        json! {{
+            "__typename": "Redditor",
+            "id": self.reddit_id(),
+            "name": self.display_name.as_ref().unwrap_or(&self.name),
+            "isCakeDayNow": false, // TODO
+            "newIcon": self.avatar.as_media_source(),
+            "iconSmall": self.avatar.as_media_source(),
+            "snoovatarIcon": self.avatar.as_media_source(),
+            "profile": { "isNsfw": false },
+            "accountType": null,
+        }}
     }
 }
 
@@ -112,6 +129,29 @@ impl HackTraitCommunity for Community {
 
     fn path(&self) -> String {
         format!("/c/{}@{}", self.name, "todo") // TODO
+    }
+}
+
+pub trait HackTraitComment {
+    fn depth(&self) -> usize;
+    fn reddit_id(&self) -> String;
+    fn reddit_parent_id(&self) -> Option<String>;
+}
+
+impl HackTraitComment for Comment {
+    fn depth(&self) -> usize {
+        self.path.bytes().filter(|&b| b == b'.').count().saturating_sub(1)
+    }
+
+    fn reddit_id(&self) -> String {
+        format!("t1_{}", self.id)
+    }
+
+    fn reddit_parent_id(&self) -> Option<String> {
+        match self.path.split('.').rev().nth(1) {
+            Some("0") | None => None,
+            Some(parent_id) => Some(format!("t1_{parent_id}")),
+        }
     }
 }
 
@@ -219,6 +259,25 @@ impl HackTraitSortType for Option<SortType> {
     }
 }
 
+impl HackTraitSortType for Option<CommentSortType> {
+    fn deserialize_from_reddit<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        // TODO
+        let sort_type = String::deserialize(deserializer)?;
+        match sort_type.as_str() {
+            "BLANK" => Ok(None),
+            "CONFIDENCE" => Ok(Some(CommentSortType::Hot)),
+            "CONTROVERSIAL" => Ok(Some(CommentSortType::Controversial)),
+            "LIVE" => Ok(Some(CommentSortType::New)),
+            "NEW" => Ok(Some(CommentSortType::New)),
+            "OLD" => Ok(Some(CommentSortType::Old)),
+            "QA" => Ok(None),
+            "RANDOM" => Ok(None),
+            "TOP" => Ok(Some(CommentSortType::Top)),
+            _ => Err(serde::de::Error::custom(format!("Unknown sort type: {sort_type}"))),
+        }
+    }
+}
+
 pub fn get_lemmy_client(req: &HttpRequest) -> Option<(String, LemmyClient)> {
     let autorization = req.headers().get("authorization")?.to_str().ok()?;
     let jwt = autorization.split_once(' ')?.1.to_owned();
@@ -283,6 +342,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("IdentityMatrixNotifications")).to(get_matrix_notifications::get_matrix_notifications))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("MarketingNudges")).to(get_marketing_nudges::get_marketing_nudges))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("PostsByIds")).to(get_posts::get_posts))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("PostComments")).to(get_comments::get_comments))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ProfileTrophies")).to(get_trophies::get_trophies))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
