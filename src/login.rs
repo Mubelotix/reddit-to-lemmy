@@ -38,10 +38,9 @@
 //  }
 // "{}"
 
-use actix_web::{post, web::Json, HttpResponse, HttpResponseBuilder, Responder};
-use awc::http::StatusCode;
+use actix_web::{post, web::Json, HttpResponse, Responder};
 use lemmy_client::{ClientOptions, LemmyClient};
-use serde::{Serialize, Deserialize};
+use serde::Deserialize;
 use log::{debug, trace};
 
 #[derive(Debug, Deserialize)]

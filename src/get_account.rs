@@ -4,10 +4,10 @@
 // {"data":{"identity":{"id":"t2_5xrogxaw","createdAt":"2020-06-11T15:00:40.279000+0000","email":"mubelotix@gmail.com","isEmailPermissionRequired":true,"isSuspended":false,"isModerator":false,"suspensionExpiresAt":null,"isEmailVerified":true,"isPasswordSet":true,"isForcePasswordReset":false,"coins":0,"isNameEditable":false,"isSubredditCreationAllowed":true,"preferences":{"isTopKarmaSubredditsShown":false},"econSubscriptions":[],"linkedIdentities":[{"issuer":"GOOGLE"}],"phoneNumber":{"code":null,"number":null},"inbox":{"unreadCount":183},"modMail":{"isUnread":false},"redditor":{"id":"t2_5xrogxaw","name":"Mubelotix","prefixedName":"u/Mubelotix","isEmployee":false,"isFriend":false,"isPremiumMember":false,"isProfileHiddenFromSearchEngines":false,"isAcceptingChats":true,"isAcceptingFollowers":false,"cakeDayOn":"2020-06-11","snoovatarIcon":{"url":"https://i.redd.it/snoovatar/avatars/nftv2_bmZ0X2VpcDE1NToxMzdfYzhkM2EzYTgzYmRlNWRhZDA2ZDQzNjY5NGUzZTIyYWMzZTY0ZDU3N18zOTA2MDEy_rare_fa763d6b-619c-4db4-87a3-9b47abd1eb53.png"},"profile":{"id":"t5_2r8wgi","createdAt":"2020-06-11T15:00:40.279000+0000","isUserBanned":false,"isDefaultBanner":true,"path":"/user/Mubelotix/","socialLinks":[{"__typename":"SocialLink","id":"be84d6cd-c010-41bb-9775-ee1e6f036779","type":"CUSTOM","title":"Lemmy","handle":null,"outboundUrl":"https://jlai.lu/u/Mubelotix"}],"isSubscribed":false,"isTopListingAllowed":true,"allowedPostTypes":["LINK","IMAGE","VIDEO","TEXT","SPOILER","POLL","GALLERY"],"description":{"richtext":null},"isNsfw":false,"title":"Mubelotix@jlai.lu","subscribersCount":0,"isDefaultIcon":false,"isContributor":false,"publicDescriptionText":"Cypherpunk","moderatorsInfo":{"edges":[{"node":{"id":"t2_5xrogxaw"}}]},"styles":{"icon":"https://styles.redditmedia.com/t5_2r8wgi/styles/profileIcon_snoo-nftv2_bmZ0X2VpcDE1NToxMzdfNDY2YTMzMDg4N2JkZjYyZDUzZjk2OGVhODI0NzkzMTUwZjA3NzYyZV82Njk_rare_4d6ae543-e1d8-4485-879d-fa6b1443b539-headshot.png?width=256\u0026height=256\u0026frame=1\u0026auto=webp\u0026crop=256:256,smart\u0026s=fb597a371a013483693ecd452d40e5eaeba4ca05","legacyPrimaryColor":null,"legacyIcon":{"url":"https://i.redd.it/snoovatar/avatars/nftv2_bmZ0X2VpcDE1NToxMzdfYzhkM2EzYTgzYmRlNWRhZDA2ZDQzNjY5NGUzZTIyYWMzZTY0ZDU3N18zOTA2MDEy_rare_fa763d6b-619c-4db4-87a3-9b47abd1eb53-headshot.png","dimensions":{"width":256,"height":256}},"profileBanner":null}},"karma":{"total":10223.0,"fromAwardsGiven":794.0,"fromAwardsReceived":308.0,"fromPosts":1146.0,"fromComments":7975.0},"trophyCase":{"name":"Trophies","totalUnlocked":10}}}}}
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use log::{debug, trace};
 use serde_json::json;
-use crate::{get_jwt, HackTraitPerson};
+use crate::{get_lemmy_client, HackTraitPerson};
 use GetAccountError::*;
 
 #[derive(Debug)]
@@ -39,12 +39,7 @@ impl ResponseError for GetAccountError {
 pub async fn get_account(request: HttpRequest) -> Result<HttpResponse, GetAccountError> {
     debug!("get_account");
     
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let site = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
     let unread_count = client.unread_count(LemmyRequest { body: (), jwt: Some(jwt) }).await.map_err(UnreadCount)?;

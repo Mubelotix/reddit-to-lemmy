@@ -3,12 +3,12 @@
 // {"data":{"identity":{"matrixNotifications":{"unreadCount":null}}}}
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde_json::json;
 use log::{debug, trace};
 use GetMatrixNotificationsError::*;
 
-use crate::get_jwt;
+use crate::get_lemmy_client;
 
 #[derive(Debug)]
 pub enum GetMatrixNotificationsError {
@@ -35,12 +35,7 @@ impl ResponseError for GetMatrixNotificationsError {
 pub async fn get_matrix_notifications(request: HttpRequest) -> Result<HttpResponse, GetMatrixNotificationsError> {
     debug!("get_matrix_notifications");
 
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let unread_count = client.unread_count(LemmyRequest { body: (), jwt: Some(jwt) }).await.map_err(UnreadCount)?;
 

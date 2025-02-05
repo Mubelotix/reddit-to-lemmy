@@ -2,7 +2,7 @@
 
 use actix_web::{guard::{Guard, GuardContext}, web, App, HttpRequest, HttpResponse, HttpServer};
 use base64::Engine;
-use lemmy_client::lemmy_api_common::lemmy_db_schema::{newtypes::DbUrl, source::{community::Community, post::Post}, CommentSortType, SortType};
+use lemmy_client::{lemmy_api_common::lemmy_db_schema::{newtypes::DbUrl, source::{community::Community, post::Post}, CommentSortType, SortType}, ClientOptions, LemmyClient};
 use log::{info, warn};
 use serde::{Deserialize, Deserializer};
 
@@ -49,6 +49,7 @@ mod get_trophies;
 mod get_username;
 mod get_vaults;
 mod register_mobile_push_token;
+mod search_communities;
 mod search_message_reactions;
 
 #[derive(Deserialize)]
@@ -114,18 +115,18 @@ fn markdown_to_text(markdown: &str) -> String {
         use markdown::mdast::Node::*;
     
         match node {
-            Root(root) => root.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            Blockquote(blockquote) => blockquote.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            FootnoteDefinition(footnote_definition) => footnote_definition.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            List(list) => list.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            Delete(delete) => format!("-{}-", delete.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" ")),
-            Emphasis(emphasis) => emphasis.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            Link(link) => link.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            Strong(strong) => strong.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Root(root) => root.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            Blockquote(blockquote) => blockquote.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            FootnoteDefinition(footnote_definition) => footnote_definition.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            List(list) => list.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            Delete(delete) => format!("-{}-", delete.children.into_iter().map(text_content).collect::<Vec<_>>().join(" ")),
+            Emphasis(emphasis) => emphasis.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            Link(link) => link.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            Strong(strong) => strong.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
             Text(text) => text.value,
-            Heading(heading) => heading.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            ListItem(list_item) => list_item.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
-            Paragraph(paragraph) => paragraph.children.into_iter().map(|c| text_content(c)).collect::<Vec<_>>().join(" "),
+            Heading(heading) => heading.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            ListItem(list_item) => list_item.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
+            Paragraph(paragraph) => paragraph.children.into_iter().map(text_content).collect::<Vec<_>>().join(" "),
             _ => String::new()
         }
     }
@@ -213,10 +214,16 @@ impl HackTraitSortType for Option<SortType> {
     }
 }
 
-pub fn get_jwt(req: &HttpRequest) -> Option<String> {
+pub fn get_lemmy_client(req: &HttpRequest) -> Option<(String, LemmyClient)> {
     let autorization = req.headers().get("authorization")?.to_str().ok()?;
     let jwt = autorization.split_once(' ')?.1.to_owned();
-    Some(jwt)
+
+    let client = LemmyClient::new(ClientOptions {
+        domain: String::from("jlai.lu"),
+        secure: true
+    });
+
+    Some((jwt, client))
 }
 
 struct Apollo(&'static str);
@@ -262,6 +269,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetDevPlatformMetadata")).to(get_dev_metadata::get_dev_metadata))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEarnedGoldBalance")).to(get_earned_gold::get_earned_gold_balance))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEligibleUxExperiences")).to(get_eligible_experiences::get_eligible_experiences))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("HomeFeedPostsByIds")).to(get_posts::get_posts))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetRealUsername")).to(get_username::get_username))

@@ -3,11 +3,11 @@
 // {"data":{"redditorInfoByName":{"__typename":"Redditor","id":"t2_5xrogxaw","name":"Mubelotix","prefixedName":"u/Mubelotix","isFriend":false,"isEmployee":false,"isAcceptingChats":true,"isAcceptingFollowers":false,"isAcceptingPMs":true,"isVerified":true,"profile":{"createdAt":"2020-06-11T15:00:40.279000+0000","subscribersCount":0,"allowedPostTypes":[],"isUserBanned":false,"isContributor":false,"isDefaultIcon":false,"isDefaultBanner":true,"path":"/user/Mubelotix/","isNsfw":false,"title":"Mubelotix@jlai.lu","publicDescriptionText":"Cypherpunk","isSubscribed":false,"moderatorsInfo":{"edges":[{"node":{"id":"t2_5xrogxaw"}}]},"description":{"richtext":null},"socialLinks":[{"__typename":"SocialLink","id":"be84d6cd-c010-41bb-9775-ee1e6f036779","type":"CUSTOM","title":"Lemmy","handle":null,"outboundUrl":"https://jlai.lu/u/Mubelotix"}],"styles":{"icon":"https://styles.redditmedia.com/t5_2r8wgi/styles/profileIcon_snoo-nftv2_bmZ0X2VpcDE1NToxMzdfNDY2YTMzMDg4N2JkZjYyZDUzZjk2OGVhODI0NzkzMTUwZjA3NzYyZV82Njk_rare_4d6ae543-e1d8-4485-879d-fa6b1443b539-headshot.png?width=256\u0026height=256\u0026frame=1\u0026auto=webp\u0026crop=256:256,smart\u0026s=fb597a371a013483693ecd452d40e5eaeba4ca05","legacyPrimaryColor":null,"legacyIcon":{"url":"https://i.redd.it/snoovatar/avatars/nftv2_bmZ0X2VpcDE1NToxMzdfYzhkM2EzYTgzYmRlNWRhZDA2ZDQzNjY5NGUzZTIyYWMzZTY0ZDU3N18zOTA2MDEy_rare_fa763d6b-619c-4db4-87a3-9b47abd1eb53-headshot.png","dimensions":{"width":256,"height":256}},"profileBanner":null}},"profileExemptedExperiments":[],"karma":{"total":10223.0,"fromAwardsGiven":794.0,"fromAwardsReceived":308.0,"fromPosts":1146.0,"fromComments":7975.0},"snoovatarIcon":{"url":"https://i.redd.it/snoovatar/avatars/nftv2_bmZ0X2VpcDE1NToxMzdfYzhkM2EzYTgzYmRlNWRhZDA2ZDQzNjY5NGUzZTIyYWMzZTY0ZDU3N18zOTA2MDEy_rare_fa763d6b-619c-4db4-87a3-9b47abd1eb53.png"},"contributorPublicProfile":{"tier":"NON_CONTRIBUTOR"}}}}
 
 use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::{person::GetPersonDetails, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::{person::GetPersonDetails, LemmyErrorType}, LemmyRequest};
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_jwt, GraphQlRequest, HackTraitCommunity, HackTraitPerson};
+use crate::{get_lemmy_client, GraphQlRequest, HackTraitCommunity, HackTraitPerson};
 use GetProfileError::*;
 
 #[derive(Debug)]
@@ -45,12 +45,7 @@ pub async fn get_profile(request: HttpRequest, body: Json<GraphQlRequest<GetProf
 
     // Support distant-instance users
     
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let details = client.get_person(LemmyRequest { body: GetPersonDetails {
         username: Some(body.variables.name.clone()),

@@ -4,10 +4,10 @@
 
 use std::collections::HashSet;
 use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_jwt, GraphQlRequest, HackTraitCommunity};
+use crate::{get_lemmy_client, GraphQlRequest, HackTraitCommunity};
 use log::{debug, trace};
 use GetCommunitiesError::*;
 
@@ -47,12 +47,7 @@ pub struct GetCommunitiesVariables {
 pub async fn get_communities(request: HttpRequest, body: Json<GraphQlRequest<GetCommunitiesVariables>>) -> Result<HttpResponse, GetCommunitiesError> {
     debug!("get_communities");
 
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let posts = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
     let my_user = posts.my_user.ok_or(MissingUser)?;

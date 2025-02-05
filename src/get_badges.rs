@@ -3,12 +3,12 @@
 // {"data":{"badgeIndicators":{"__typename":"BadgeIndicators","directMessages":{"count":0,"style":"NUMBERED"},"chatTab":{"count":0,"style":"NUMBERED"},"messageTab":{"count":0,"style":"NUMBERED"},"activityTab":{"count":0,"style":"NUMBERED"},"inboxTab":{"count":0,"style":"NUMBERED"},"appBadge":{"count":0,"style":"NUMBERED"},"chatHasNewMessages":{"style":"FILLED","isShowing":false}}}}
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde_json::json;
 use GetBadgesError::*;
 use log::{debug, trace};
 
-use crate::get_jwt;
+use crate::get_lemmy_client;
 
 #[derive(Debug)]
 pub enum GetBadgesError {
@@ -35,12 +35,7 @@ impl ResponseError for GetBadgesError {
 pub async fn get_badges(request: HttpRequest) -> Result<HttpResponse, GetBadgesError> {
     debug!("get_badges");
 
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let unread_count = client.unread_count(LemmyRequest { body: (), jwt: Some(jwt) }).await.map_err(UnreadCount)?;
 

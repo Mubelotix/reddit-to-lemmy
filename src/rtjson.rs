@@ -2,10 +2,8 @@
 // 
 // {"document":[{"e":"par","c":[{"e":"text","t":"this is a paragraph"}]},{"e":"par","c":[{"e":"text","t":"this is a bold","f":[[1,10,4]]}]},{"e":"par","c":[{"e":"text","t":"this is italic","f":[[2,8,6]]}]},{"e":"par","c":[{"e":"text","t":"this is striketrhough","f":[[8,8,13]]}]},{"e":"par","c":[{"e":"text","t":"this is high","f":[[32,8,4]]}]},{"e":"h","l":1,"c":[{"e":"raw","t":"this is heading"}]},{"e":"par","c":[{"e":"text","t":"this is "},{"e":"link","t":"link","u":"https://google.com"}]},{"e":"list","o":false,"c":[{"e":"li","c":[{"e":"par","c":[{"e":"text","t":"this is a list"}]}]},{"e":"li","c":[{"e":"par","c":[{"e":"text","t":"second item"}]}]}]},{"e":"list","o":true,"c":[{"e":"li","c":[{"e":"par","c":[{"e":"text","t":"this is a numbered list"}]}]},{"e":"li","c":[{"e":"par","c":[{"e":"text","t":"second item"}]}]}]},{"e":"blockquote","c":[{"e":"par","c":[{"e":"text","t":"this is a quote"}]}]},{"e":"par","c":[{"e":"text","t":"this is code","f":[[64,0,12]]}]},{"e":"code","c":[{"e":"raw","t":"this is better code!"}]},{"e":"par","c":[{"e":"text","t":""}]},{"e":"table","h":[{"c":[{"e":"text","t":"this"}]},{"c":[{"e":"text","t":"is"}]},{"c":[]}],"c":[[{"c":[{"e":"text","t":"a"}]},{"c":[{"e":"text","t":"table"}]},{"c":[]}],[{"c":[]},{"c":[]},{"c":[]}]]},{"e":"par","c":[{"e":"spoilertext","c":[{"e":"text","t":"this is a spoiler"}]}]},{"e":"img","id":"i70gb6ewu7ge1","c":"this is a caption"},{"e":"video","id":"j3t4ym4zu7ge1","c":"this is a video caption"},{"e":"par","c":[{"e":"br"}]},{"e":"par","c":[{"e":"text","t":""}]}]}
 
-use std::{collections::VecDeque, f32::consts::E, ops::{Add, AddAssign, Range}};
-
+use std::ops::AddAssign;
 use markdown::{mdast::Node, ParseOptions};
-use serde::de::value;
 use serde_json::{json, Value};
 
 const BOLD: usize = 1;

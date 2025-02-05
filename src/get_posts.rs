@@ -6,11 +6,11 @@
 
 use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
 use futures::future::join_all;
-use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{newtypes::PostId, SubscribedType}, post::GetPost}, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{newtypes::PostId, SubscribedType}, post::GetPost}, LemmyRequest};
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_jwt, markdown_to_text, rtjson::markdown_to_rtjson, GraphQlRequest, HackTraitCommunity, HackTraitMediaSource, HackTraitPerson, HackTraitPost};
+use crate::{get_lemmy_client, markdown_to_text, rtjson::markdown_to_rtjson, GraphQlRequest, HackTraitCommunity, HackTraitMediaSource, HackTraitPerson, HackTraitPost};
 use GetPostsError::*;
 
 #[derive(Debug)]
@@ -42,12 +42,7 @@ pub struct GetPostsVariables {
 pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsVariables>>) -> Result<HttpResponse, GetPostsError> {
     debug!("get_posts: {:?}", body.variables);
     
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let mut futures = Vec::new();
     for id in &body.variables.ids {

@@ -4,12 +4,12 @@
 
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde_json::json;
 use GetBlockedUsersError::*;
 use log::{debug, trace};
 
-use crate::{get_jwt, HackTraitPerson};
+use crate::{get_lemmy_client, HackTraitPerson};
 
 #[derive(Debug)]
 pub enum GetBlockedUsersError {
@@ -38,12 +38,7 @@ impl ResponseError for GetBlockedUsersError {
 pub async fn get_blocked_users(request: HttpRequest) -> Result<HttpResponse, GetBlockedUsersError> {
     debug!("get_blocked_users");
 
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let site = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
     let my_user = site.my_user.ok_or(MissingUser)?;

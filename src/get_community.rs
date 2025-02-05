@@ -9,11 +9,11 @@
 
 
 use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::{community::GetCommunity, LemmyErrorType}, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::{community::GetCommunity, LemmyErrorType}, LemmyRequest};
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_jwt, GraphQlRequest, HackTraitCommunity, HackTraitPerson};
+use crate::{get_lemmy_client, GraphQlRequest, HackTraitCommunity, HackTraitPerson};
 use GetCommunityError::*;
 
 #[derive(Debug)]
@@ -55,12 +55,7 @@ pub async fn get_community(request: HttpRequest, body: Json<GraphQlRequest<GetCo
         }}));
     }
     
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let details = client.get_community(LemmyRequest { body: GetCommunity {
         name: Some(body.variables.subreddit_name.clone()),

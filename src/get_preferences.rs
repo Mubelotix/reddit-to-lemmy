@@ -3,9 +3,9 @@
 // {"data":{"identity":{"preferences":{"isAdPersonalizationAllowed":false,"isClickTrackingEnabled":false,"defaultCommentSort":"CONFIDENCE","geopopular":"","isProfileHiddenFromRobots":false,"isSuggestedSortIgnored":false,"mediaThumbnailVisibility":"SUBREDDIT","isNsfwMediaBlocked":true,"isNsfwContentShown":true,"isNsfwSearchEnabled":true,"isLocationBasedRecommendationEnabled":false,"surveyLastSeenAt":null,"isThirdPartyAdPersonalizationAllowed":false,"isThirdPartySiteAdPersonalizationAllowed":false,"isThirdPartyInfoAdPersonalizationAllowed":false,"isThirdPartySiteDataPersonalizedContentAllowed":false,"isTopKarmaSubredditsShown":false,"acceptPrivateMessagesFrom":"EVERYONE","isEmailOptedOut":false,"isOnlinePresenceShown":false,"isFeedRecommendationsEnabled":true,"countryCode":"XZ","isFollowersEnabled":false,"isEmailDigestEnabled":false,"isShowFollowersCountEnabled":false,"isSmsNotificationsEnabled":false,"minCommentScore":-4,"isMachineTranslationImmersive":"UNSET","hiddenSubredditIds":[],"isHideAllContribution":false,"isHideProfileNsfw":false}}}}
 
 use actix_web::{HttpRequest, HttpResponse, ResponseError};
-use lemmy_client::{lemmy_api_common::LemmyErrorType, ClientOptions, LemmyClient, LemmyRequest};
+use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde_json::json;
-use crate::get_jwt;
+use crate::get_lemmy_client;
 use log::{debug, trace};
 use GetPreferencesError::*;
 
@@ -36,12 +36,7 @@ impl ResponseError for GetPreferencesError {
 pub async fn get_preferences(request: HttpRequest) -> Result<HttpResponse, GetPreferencesError> {
     debug!("get_preferences");
 
-    let jwt = get_jwt(&request).ok_or(Authentication)?;
-
-    let client = LemmyClient::new(ClientOptions {
-        domain: String::from("jlai.lu"),
-        secure: true
-    });
+    let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
 
     let site = client.get_site(LemmyRequest { body: (), jwt: Some(jwt.clone()) }).await.map_err(GetSite)?;
     let my_user = site.my_user.ok_or(MissingUser)?;
