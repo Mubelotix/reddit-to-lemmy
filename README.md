@@ -6,6 +6,8 @@ This allows using the official Reddit mobile app to browse [Lemmy, its federated
 
 Why? Because fuck spez
 
+<!-- Generate mockups with https://mockuphone.com/model/google-pixel-8/ -->
+
 <p align="center">
   <img src=".github/screenshot-home.png" alt="home feed screenshot" width="30%">
   <img src=".github/screenshot-search.png" alt="search screenshot" width="30%">
