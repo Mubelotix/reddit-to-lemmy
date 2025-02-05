@@ -12,7 +12,7 @@ use serde::Deserialize;
 use serde_json::json;
 use log::debug;
 
-use crate::GraphQlRequest;
+use crate::GraphQl;
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +20,7 @@ pub struct GetCustomEmojisVariables {
     subreddit_name: String
 }
 
-pub async fn get_custom_emojis(body: Json<GraphQlRequest<GetCustomEmojisVariables>>) -> HttpResponse {
+pub async fn get_custom_emojis(body: Json<GraphQl<GetCustomEmojisVariables>>) -> HttpResponse {
     debug!("get_custom_emojis: {:?}", body.variables);
 
     let rep = match body.variables.subreddit_name.starts_with("u_") {

@@ -49,12 +49,12 @@ mod get_trophies;
 mod get_username;
 mod get_vaults;
 mod register_mobile_push_token;
-mod search_communities;
+mod search;
 mod search_message_reactions;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GraphQlRequest<V> {
+pub struct GraphQl<V> {
     operation_name: String,
     variables: V,
     extensions: serde_json::Value,
@@ -87,6 +87,7 @@ impl HackTraitPerson for lemmy_client::lemmy_api_common::lemmy_db_schema::source
 
 pub trait HackTraitCommunity {
     fn reddit_id(&self) -> String;
+    fn reddit_type(&self) -> &'static str;
     fn prefixed_name(&self) -> String;
     fn link(&self) -> String;
     fn path(&self) -> String;
@@ -95,6 +96,10 @@ pub trait HackTraitCommunity {
 impl HackTraitCommunity for Community {
     fn reddit_id(&self) -> String {
         format!("t5_{}", self.id.0)
+    }
+
+    fn reddit_type(&self) -> &'static str {
+        if self.posting_restricted_to_mods {"PROTECTED"} else {"PUBLIC"}
     }
 
     fn prefixed_name(&self) -> String {
@@ -281,6 +286,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("ProfileTrophies")).to(get_trophies::get_trophies))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("RegisterMobilePushToken")).to(register_mobile_push_token::register_mobile_push_token))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchChatMessageReactionIcons")).to(search_message_reactions::search_message_reactions))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SearchTypeaheadByType")).to(search::search))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubredditStructuredStyle")).to(get_community::get_community))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("SubscribedSubredditsCount")).to(get_subscribed_count::get_subscribed_count))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("UserLocation")).to(get_location::get_location))

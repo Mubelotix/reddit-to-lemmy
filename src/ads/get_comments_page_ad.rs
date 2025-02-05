@@ -7,14 +7,14 @@ use serde::Deserialize;
 use serde_json::json;
 use log::debug;
 
-use crate::GraphQlRequest;
+use crate::GraphQl;
 
 #[derive(Deserialize, Debug)]
 pub struct GetCommentsPageAdVariables {
     id: String,
 }
 
-pub async fn get_comments_page_ad(body: Json<GraphQlRequest<GetCommentsPageAdVariables>>) -> HttpResponse {
+pub async fn get_comments_page_ad(body: Json<GraphQl<GetCommentsPageAdVariables>>) -> HttpResponse {
     debug!("get_comments_page_ad: {:?}", body.variables);
 
     let rep = json! {{

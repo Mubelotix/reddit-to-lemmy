@@ -7,7 +7,7 @@ use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_lemmy_client, GraphQlRequest, HackTraitCommunity};
+use crate::{get_lemmy_client, GraphQl, HackTraitCommunity};
 use log::{debug, trace};
 use GetCommunitiesError::*;
 
@@ -44,7 +44,7 @@ pub struct GetCommunitiesVariables {
     limit: usize
 }
 
-pub async fn get_communities(request: HttpRequest, body: Json<GraphQlRequest<GetCommunitiesVariables>>) -> Result<HttpResponse, GetCommunitiesError> {
+pub async fn get_communities(request: HttpRequest, body: Json<GraphQl<GetCommunitiesVariables>>) -> Result<HttpResponse, GetCommunitiesError> {
     debug!("get_communities");
 
     let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
@@ -91,7 +91,7 @@ pub async fn get_communities(request: HttpRequest, body: Json<GraphQlRequest<Get
                         "isFavorite": false, // TODO
                         "isSubscribed": followed.contains(&community.id),
                         "isNSFW": community.nsfw,
-                        "type": if community.posting_restricted_to_mods {"PROTECTED"} else {"PUBLIC"},
+                        "type": community.reddit_type(),
                         "modPermissions": null // TODO
                     }}).collect::<Vec<_>>()
                 }

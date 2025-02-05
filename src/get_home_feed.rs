@@ -6,7 +6,7 @@ use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{ListingType, SortType, SubscribedType}, lemmy_db_views::structs::PaginationCursor, post::GetPosts, LemmyErrorType}, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_lemmy_client, markdown_to_text, GraphQlRequest, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
+use crate::{get_lemmy_client, markdown_to_text, GraphQl, HackTraitCommunity, HackTraitPerson, HackTraitPost, HackTraitSortType};
 use log::{debug, trace};
 use GetHomeFeedError::*;
 
@@ -40,7 +40,7 @@ pub struct GetHomeFeedVariables {
     after: Option<String>,
 }
 
-pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQlRequest<GetHomeFeedVariables>>) -> Result<HttpResponse, GetHomeFeedError> {
+pub async fn get_home_feed(request: HttpRequest, body: Json<GraphQl<GetHomeFeedVariables>>) -> Result<HttpResponse, GetHomeFeedError> {
     debug!("get_home_feed: {:?}", body.variables);
 
     let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;

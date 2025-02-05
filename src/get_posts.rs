@@ -10,7 +10,7 @@ use lemmy_client::{lemmy_api_common::{lemmy_db_schema::{newtypes::PostId, Subscr
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_lemmy_client, markdown_to_text, rtjson::markdown_to_rtjson, GraphQlRequest, HackTraitCommunity, HackTraitMediaSource, HackTraitPerson, HackTraitPost};
+use crate::{get_lemmy_client, markdown_to_text, rtjson::markdown_to_rtjson, GraphQl, HackTraitCommunity, HackTraitMediaSource, HackTraitPerson, HackTraitPost};
 use GetPostsError::*;
 
 #[derive(Debug)]
@@ -39,7 +39,7 @@ pub struct GetPostsVariables {
     ids: Vec<String>
 }
 
-pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsVariables>>) -> Result<HttpResponse, GetPostsError> {
+pub async fn get_posts(request: HttpRequest, body: Json<GraphQl<GetPostsVariables>>) -> Result<HttpResponse, GetPostsError> {
     debug!("get_posts: {:?}", body.variables);
     
     let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;
@@ -208,7 +208,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQlRequest<GetPostsV
                     "prefixedName": details.community_view.community.prefixed_name(),
                     "isQuarantined": false,
                     "title": details.community_view.community.title,
-                    "type": if details.community_view.community.posting_restricted_to_mods {"PROTECTED"} else {"PUBLIC"},
+                    "type": details.community_view.community.reddit_type(),
                     "subscribersCount": details.community_view.counts.subscribers,
                     "isNsfw": details.community_view.community.nsfw,
                     "isSubscribed": details.community_view.subscribed != SubscribedType::NotSubscribed,

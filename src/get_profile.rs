@@ -7,7 +7,7 @@ use lemmy_client::{lemmy_api_common::{person::GetPersonDetails, LemmyErrorType},
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_lemmy_client, GraphQlRequest, HackTraitCommunity, HackTraitPerson};
+use crate::{get_lemmy_client, GraphQl, HackTraitCommunity, HackTraitPerson};
 use GetProfileError::*;
 
 #[derive(Debug)]
@@ -40,7 +40,7 @@ pub struct GetProfileVariables {
 }
 
 
-pub async fn get_profile(request: HttpRequest, body: Json<GraphQlRequest<GetProfileVariables>>) -> Result<HttpResponse, GetProfileError> {
+pub async fn get_profile(request: HttpRequest, body: Json<GraphQl<GetProfileVariables>>) -> Result<HttpResponse, GetProfileError> {
     debug!("get_profile: {:?}", body.variables);
 
     // Support distant-instance users

@@ -7,7 +7,7 @@ use actix_web::{web::Json, HttpRequest, HttpResponse, ResponseError};
 use lemmy_client::{lemmy_api_common::LemmyErrorType, LemmyRequest};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_lemmy_client, GraphQlRequest};
+use crate::{get_lemmy_client, GraphQl};
 use log::{debug, trace};
 use GetSubscribedCountError::*;
 
@@ -41,7 +41,7 @@ pub struct GetSubscribedCountVariables {
     first: usize
 }
 
-pub async fn get_subscribed_count(request: HttpRequest, body: Json<GraphQlRequest<GetSubscribedCountVariables>>) -> Result<HttpResponse, GetSubscribedCountError> {
+pub async fn get_subscribed_count(request: HttpRequest, body: Json<GraphQl<GetSubscribedCountVariables>>) -> Result<HttpResponse, GetSubscribedCountError> {
     debug!("get_subscribed_count");
 
     let (jwt, client) = get_lemmy_client(&request).ok_or(Authentication)?;

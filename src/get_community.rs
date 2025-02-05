@@ -13,7 +13,7 @@ use lemmy_client::{lemmy_api_common::{community::GetCommunity, LemmyErrorType}, 
 use log::{debug, trace};
 use serde::Deserialize;
 use serde_json::json;
-use crate::{get_lemmy_client, GraphQlRequest, HackTraitCommunity, HackTraitPerson};
+use crate::{get_lemmy_client, GraphQl, HackTraitCommunity, HackTraitPerson};
 use GetCommunityError::*;
 
 #[derive(Debug)]
@@ -44,7 +44,7 @@ pub struct GetCommunityVariables {
     subreddit_name: String
 }
 
-pub async fn get_community(request: HttpRequest, body: Json<GraphQlRequest<GetCommunityVariables>>) -> Result<HttpResponse, GetCommunityError> {
+pub async fn get_community(request: HttpRequest, body: Json<GraphQl<GetCommunityVariables>>) -> Result<HttpResponse, GetCommunityError> {
     debug!("get_community: {:?}", body.variables);
 
     if body.variables.subreddit_name.starts_with("u_") {

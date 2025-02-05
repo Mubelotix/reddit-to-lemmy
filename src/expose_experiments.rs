@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use log::debug;
 
-use crate::GraphQlRequest;
+use crate::GraphQl;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -15,7 +15,7 @@ pub struct ExposeExperimentsVariables {
     inputs: Vec<Value>,
 }
 
-pub async fn expose_experiments(body: Json<GraphQlRequest<ExposeExperimentsVariables>>) -> HttpResponse {
+pub async fn expose_experiments(body: Json<GraphQl<ExposeExperimentsVariables>>) -> HttpResponse {
     debug!("expose_experiments");
 
     let rep = json! {{
