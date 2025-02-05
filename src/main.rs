@@ -41,6 +41,7 @@ mod get_inventory_items;
 mod get_location;
 mod get_marketing_nudges;
 mod get_matrix_notifications;
+mod get_post_requirements;
 mod get_posts;
 mod get_preferences;
 mod get_profile;
@@ -335,6 +336,7 @@ async fn main() -> std::io::Result<()> {
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetEligibleUxExperiences")).to(get_eligible_experiences::get_eligible_experiences))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("HomeFeedPostsByIds")).to(get_posts::get_posts))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetInventoryItemsByIds")).to(get_inventory_items::get_inventory_items))
+            .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPostRequirements")).to(get_post_requirements::get_post_requirements))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetPublicShowcaseOfCurrentUser")).to(get_public_showcase::get_public_showcase))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetRealUsername")).to(get_username::get_username))
             .route("/gql-fed.reddit.com/", web::post().guard(Apollo("GetSubredditChannels")).to(get_channels::get_channels))
