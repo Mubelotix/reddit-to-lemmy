@@ -7,8 +7,9 @@ This allows using the official Reddit mobile app to browse [Lemmy, its federated
 Why? Because fuck spez
 
 <p align="center">
-  <img src=".github/screenshot-home.png" alt="home feed screenshot" width="45%">
-  <img src=".github/screenshot-search.png" alt="search screenshot" width="45%">
+  <img src=".github/screenshot-home.png" alt="home feed screenshot" width="30%">
+  <img src=".github/screenshot-search.png" alt="search screenshot" width="30%">
+  <img src=".github/screenshot-post.png" alt="post screenshot" width="30%">
 </p>
 
 ## Usage

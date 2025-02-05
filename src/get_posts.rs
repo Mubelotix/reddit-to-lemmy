@@ -126,17 +126,7 @@ pub async fn get_posts(request: HttpRequest, body: Json<GraphQl<GetPostsVariable
                 "viewCount": null,
                 "authorFlair": null, // TODO: Could this be used to display the instance?
                 "flair": null,
-                "authorInfo": {
-                    "__typename": "Redditor",
-                    "id": details.post_view.creator.reddit_id(),
-                    "name": details.post_view.creator.display_name.as_ref().unwrap_or(&details.post_view.creator.name),
-                    "isCakeDayNow": false, // TODO
-                    "newIcon": details.post_view.creator.avatar.as_media_source(),
-                    "iconSmall": details.post_view.creator.avatar.as_media_source(),
-                    "snoovatarIcon": details.post_view.creator.avatar.as_media_source(),
-                    "profile": { "isNsfw": false },
-                    "accountType": null,
-                },
+                "authorInfo": details.post_view.creator.as_author_info(),
                 "isThumbnailEnabled": details.post_view.post.thumbnail_url.is_some(), // FIXME: not sure if this is the image or link page preview
                 "thumbnail": details.post_view.post.thumbnail_url.as_media_source(),
                 "media": match details.post_view.post.is_image() {
